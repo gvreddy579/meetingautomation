@@ -1,0 +1,15 @@
+package in.gov.cgg.struts.utils.database;
+
+public class InitVariables {
+	
+	
+	public static final String filesepartor=System.getProperty("file.separator");
+	public static final String contextName="CCETS";
+	public static final String Uploads="Uploads";
+	public static final String contextPath=System.getProperty("catalina.base")+filesepartor+"webapps"+filesepartor+contextName+filesepartor+Uploads+filesepartor;
+	public static final String filesPath=contextPath+"files"+filesepartor;
+	public static final String imagesPath=contextPath+"projectProgressPhotos"+filesepartor;
+	public static final String PhotosPath=contextPath+"Photos"+filesepartor;
+	public static final String excelsPath=contextPath+"excelFiles"+filesepartor;
+	public static final String PDFsPath=contextPath+"pdfFiles"+filesepartor;
+}

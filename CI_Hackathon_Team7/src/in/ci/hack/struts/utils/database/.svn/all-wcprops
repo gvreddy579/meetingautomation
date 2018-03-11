@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/cce/!svn/ver/938/trunk/cce/src/in/gov/cgg/struts/utils/database
+END
+DataBasePlugin.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/cce/!svn/ver/1288/trunk/cce/src/in/gov/cgg/struts/utils/database/DataBasePlugin.java
+END
+BasicDataBaseUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/cce/!svn/ver/2604/trunk/cce/src/in/gov/cgg/struts/utils/database/BasicDataBaseUtils.java
+END
+InitVariables.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/cce/!svn/ver/516/trunk/cce/src/in/gov/cgg/struts/utils/database/InitVariables.java
+END
+Mail.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/cce/!svn/ver/706/trunk/cce/src/in/gov/cgg/struts/utils/database/Mail.java
+END
+BasicUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/cce/!svn/ver/1478/trunk/cce/src/in/gov/cgg/struts/utils/database/BasicUtils.java
+END

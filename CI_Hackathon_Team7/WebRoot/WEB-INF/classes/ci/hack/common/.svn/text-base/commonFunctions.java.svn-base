@@ -1,0 +1,2429 @@
+package cgg.gov.common;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.struts.upload.FormFile;
+import org.apache.struts.util.LabelValueBean;
+
+ 
+
+
+
+import cgg.gov.cce.CCEData;
+import cgg.gov.cce.CCEServicePortTypeProxy;
+import cgg.gov.plugin.DatabasePlugin;
+
+public class commonFunctions
+{
+	public String is_empty(String value,String return_val)
+	{
+		if(value==null || value.equals(""))
+		{
+			return return_val;
+		}
+		else
+		{
+			
+			 
+			return value;
+		}
+	}
+	public static ArrayList getBoards()
+	{
+		StringBuilder query = new StringBuilder();
+		query.append("select board_name,id from boards order by order_id");
+		log("getBoards---"+query);
+		ArrayList boards = DatabasePlugin.selectQuery(query.toString());
+		return boards;
+	}
+	public ArrayList getSemisters()
+	{
+		String sql = "select semister_name,study_year  from semisters order by semister_id";
+		log("sql getCastes---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getSemisters::Error=============>"+sql);
+			e.printStackTrace();
+		}
+		return values;
+	}
+
+	
+	public ArrayList RCOCTrainingCourses()
+	{
+		String sql=null;
+		ArrayList values = new ArrayList();
+		try
+		{
+			sql="select coalesce(course_name,'')||'('|| to_char(course_fromdate,'dd/mm/yyyy')||'-'|| to_char(course_todate,'dd/mm/yyyy')||')' as course_name ,course_code from rcoc_courseentry where course_fromdate>current_date";
+				
+				/*sql = "select course_name,course_code from rcoc_courseentry where course_fromdate>current_date";*/
+			log("RCOC Training Courses sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======RCOC Training Courses ::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	} 
+	public ArrayList RCOCFacultyList(String college_code)
+	{
+		String sql=null;
+		ArrayList values = new ArrayList();
+		try
+		{
+			
+				
+				sql = "select coalesce(name,'-')|| ' ' ||coalesce(surname,'') || '(' ||d.designation || ')'as emp_name,emp_id from employee_details e inner join designationmaster d  on  e.designation=d.desigcode::text   where college='"+college_code+"' and e.desg_type='T' ";
+			log("RCOC Teaching FacultyList sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======RCOC Teaching FacultyList ::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	} 
+	public ArrayList getDistricts()
+	{
+
+		String sql = "select upper(dist_name),dist_code from pmss_districts_mst where state!='Andhra' and dist_code not in (0)   order by dist_name";
+		log("getDistricts--"+sql); 
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	public static String getStudentsByjkc(String courseLevel,String college_code) throws Exception {
+	    StringBuffer data = null;
+	    
+	    String sql = "select  s.stu_id,s.stu_name  from jkc_student_details js  inner join student_details s on s.stu_id=js.student_id where courseId="+courseLevel+" and js.college_code='"+college_code+"' order by stu_name";
+	    ArrayList values = new ArrayList();
+	    values=DatabasePlugin.selectQuery(sql);
+	    for (int i=0;i<values.size();i++) {
+	    	if(data==null){
+				data=new StringBuffer();
+				data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+			}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+	    }
+	    
+	    return data != null ? data.toString() : null;
+	}
+
+	
+	
+	
+	
+	public ArrayList getMandals(String districtId)
+	{
+		
+		if(districtId!=null && !("".equals(districtId)))
+		{
+		  
+		String sql = "select upper(mandal_name),mandal_code from pmss_mandals_mst where dist_code="
+				+ districtId + " order by mandal_name";
+		
+		log("sql getMandals---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getMandals::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+		}
+		else
+			return null;
+	}
+
+	public ArrayList getDistricts(String zoneId)
+	{
+		String sql = "";
+		if (zoneId.equals("0"))
+		{
+			sql = "select upper(district_name),district_id from districts  order by district_name";
+		} else
+		{
+			sql = "select upper(district_name),district_id from districts where zoneid='"+ zoneId + "' order by district_name";
+		}
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getDistrict::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+
+	
+	public static String getStudentsByjkc1(String courseLevel,String college_code) throws Exception {
+	    StringBuffer data = null;
+	    
+	    //String sql = "select  s.stu_id,s.stu_name  from jkc_student_details js  inner join student_details s on s.stu_id=js.student_id where group_id="+courseLevel+" and js.college_code='"+college_code+"' order by stu_name";
+	    String sql="select stu_id,stu_name ||' - '||roll_num||' - '|| case s.present_yr_study when '1' then 'FirstYear' when '2' then 'Second Year'  when '3' then 'Thirdyear' else '-' end present_yr_study1 " +
+	    		"from tskc_student_details t left join student_details s on s.stu_id=t.student_id::varchar where t.coll_code='"+college_code+"' and group_id in (select group_id  from group_names where course_slno in (select course_slno from group_names where group_id="+courseLevel+") ) and t.coll_code in (select collegecode from group_names where group_id="+courseLevel+")  order by s.present_yr_study desc,stu_name";
+	    commonFunctions.log("getStudentsByjkc1::"+sql);
+	    ArrayList values = new ArrayList();
+	    values=DatabasePlugin.selectQuery(sql);
+	    for (int i=0;i<values.size();i++) {
+	    	if(data==null){
+				data=new StringBuffer();
+				data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+			}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+	    }
+	    
+	    return data != null ? data.toString() : null;
+	}
+
+	public ArrayList getColleges(String distId)
+	{
+
+		String sql = " select collegename,newcollegecode from college_master where districtid='"
+				+ distId + "' and flag='f' and management='1' ";
+		log("reportsql:" + sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+			log("in get colleges=>" + values);
+		} catch (Exception e)
+		{
+			log("getColleges::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	public ArrayList getStudentsFromColleges(String coll_code)
+	{
+		String sql = "select stu_id||'-'||stu_name,stu_id from student_details where coll_code='"+coll_code+"'";
+		log("sql getCastes---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getSemisters::Error=============>"+sql);
+			e.printStackTrace();
+		}
+		return values;
+	}
+
+	public static ArrayList getVillages(String distid, String mandalid)
+	{
+		String query = "";
+
+		log("user id:" + distid);
+		// DatabasePlugin.getDatasource("ssaaccounts");
+		if(distid!=null && mandalid!=null &&  !("".equals(distid))&&  !("".equals(mandalid)))
+		{
+		query = "select village_name||'-'||village_code ,village_code from pmss_villages_mst where dist_code='"+ distid+ "' and mandal_code='"	+ mandalid	+ "' order by village_code";
+		 
+		log("getVillages---"+query);
+		ArrayList institution = DatabasePlugin.selectQuery(query);
+		return institution;
+		}
+		else
+			return null;
+	}
+	
+	public static ArrayList getCourseYears()
+	{
+		String query = "";
+
+	 
+		// DatabasePlugin.getDatasource("ssaaccounts");
+
+		query = "select joining_year,joining_year from student_details group by 1 order by 1 desc";
+ 
+		ArrayList joining_year = DatabasePlugin.selectQuery(query);
+		return joining_year;
+	} 
+	
+	public ArrayList getCastes(String religion)
+	{
+		String sql = "select caste_desc,caste_code  from pmss_castes_mst where religion='"
+				+ religion + "' order by 1";
+		
+		log("sql getCastes---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getCastes::Error=============>"+sql);
+			e.printStackTrace();
+		}
+		return values;
+	}
+	public ArrayList getBack_up_for_office_list()
+	{
+
+		String sql = "select type_desc,sno from public.power_backup_type where delete_flag=false order by sno";
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getBack_up_for_office_list::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	
+	public ArrayList getNature_water_facility_list()
+	{
+
+		String sql = "select type_desc,sno from public.water_facility_nature where delete_flag=false order by sno";
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getBack_up_for_office_list::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	
+	
+	public ArrayList getWater_storage_type_list()
+	{
+
+		String sql = "select  type_desc,sno from public.water_storage_type where delete_flag=false order by sno";
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getWater_storage_type_list::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	public static ArrayList getSurveys(String distid, String mandalid,
+			String villageid)
+	{
+		String query = "";
+
+		log("user id:" + distid);
+		// DatabasePlugin.getDatasource("ssaaccounts");
+
+		query = "select surno,surno  from sur_master where district_id='"
+				+ distid + "' and mandal_id='" + mandalid
+				+ "' and village_id='" + villageid + "' order by surno";
+
+		log(query);
+		ArrayList institution = DatabasePlugin.selectQuery(query);
+		return institution;
+	}
+
+	public ArrayList getDistrictUsers()
+	{
+
+		String sql = "select user_id||'-'||user_name,user_id from users where length(user_id) =2 order by user_id";
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+
+	public ArrayList getMandalUsers(String dist)
+	{
+		if (Integer.parseInt(dist) < 10)
+		{
+			dist = "0" + dist;
+		}
+		log("dist:" + dist);
+		String sql = "select user_id||'-'||user_name,user_id from users where length(user_id) =4 and substring(user_id,1,2) like '"
+				+ dist + "' order by user_id";
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+
+	public ArrayList getSchoolUsers(String dist, String mandal)
+	{
+		log(mandal + "m:in get schoolusers Dist:" + dist);
+		if (Integer.parseInt(dist) < 10)
+		{
+			dist = "0" + dist;
+		}
+		if (Integer.parseInt(mandal) < 10)
+		{
+			mandal = "0" + mandal;
+		}
+		log("dist:" + dist + "mandal:" + mandal);
+		String sql = "select user_id||'-'||user_name,user_id from users where length(user_id) =7 and substring(user_id,1,4) like '"
+				+ dist + mandal + "' order by user_id";
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+
+	public String getUsername(String userid)
+	{
+		String username = "";
+		String sql = "select user_name from users where user_id='" + userid
+				+ "'";
+		username = DatabasePlugin.getStringfromQuery(sql);
+		return username;
+	}
+
+	public ArrayList getCourse(String ctype, String str)
+	{
+
+		/*String sql = "select groupname,courseid from course where coursetype='"
+				+ ctype + "' and stream='" + str + "' and delete_flag='f' order by groupname";*/
+		String sql = "select groupname,courseid from course where delete_flag='f' order by groupname";
+		ArrayList values = new ArrayList();
+		try
+		{
+			log(sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getCourse::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+//for course cat
+	
+	public ArrayList getCourseCategory(String ctype)
+	{
+
+		String sql = "select cat_name,cat_id from coursecategory_mst where coursetype='"
+				+ ctype + "' and delete_flag='f' order by cat_name";
+		ArrayList values = new ArrayList();
+		try
+		{
+			log(sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getCourse::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+//for course cat	
+	public ArrayList getCourse1(String ctype)
+	{
+
+		String sql = "select groupname,groupname from course where  delete_flag='f'";
+		System.out.println("sql----"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+			log(sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getCourse::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+
+	public ArrayList getPosts(String ttype)
+	{
+		String type = "";
+		if (!ttype.equals("0")) type += " and a.desg_type='" + ttype + "' ";
+
+		String sql = "select a.designation,a.desigcode from designationmaster a  " + 
+				"where a.delete_flag='f' "+type+" " +
+				"order by a.designation ";
+		System.out.println("sql----395--"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+			log(sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	
+	public ArrayList getPostsforCollege(String ttype)
+	{
+		String type = "";
+		if (!ttype.equals("0")) type += " and a.desg_type='" + ttype + "' ";
+
+		String sql = "select case when desigcode='7' then 'ASSOC. PROF/ASST. PROF/LECTURER' else a.designation end ,a.desigcode from designationmaster a  " + 
+				"where a.delete_flag='f' "+type+" " +
+				"order by priority,a.designation";
+		System.out.println("sql---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+			log(sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	
+	public ArrayList getPostscats(String ttype, String collegeCode)
+	{
+		String type = "";
+		if (!ttype.equals("0")) type += " and a.desg_type='" + ttype + "' ";
+	//	if(!collegeCode.equals("0")) type += " and b.collegecode='" + collegeCode + "' ";
+		/*String sql = "select designation,desigcode from designationmaster where delete_flag='f' "
+				+ type + " order by designation";*/
+		String sql="";
+		/*String sql = "(select a.designation,a.desigcode from designationmaster a  " +
+				"where a.delete_flag='f' "+type+" " +
+				"group by a.designation,a.desigcode,a.priority order by a.priority ) union  select a.designation,a.desigcode from designationmaster a where true   "+type+"  and  desigcode in ('12','13') order by priority";*/
+		 sql="select designation,desigcode from  ((select a.designation,a.desigcode,a.priority from designationmaster a  where a.delete_flag='f'  "+type+"  group by a.designation,a.desigcode,a.priority order by a.priority ) union  select a.designation,a.desigcode,a.priority from designationmaster a where true "+type+"   and  desigcode in ('12','13') ) as a  order by  priority";
+		ArrayList values = new ArrayList();
+		try
+		{
+			log("448-getPostscats-"+sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+
+	public ArrayList getSubjects(String desgcode, String collegeCode,String ttype)
+	{
+		String sql;
+		log("==========desgcode=====" + desgcode);
+		/*if (desgcode.equals("JLV"))
+		{
+			sql = "select upper(subject),subcode from subjectmaster where substring(subcode,1,1) ='v' ORDER BY subject";
+		} else if (desgcode.equals("LB"))
+		{
+			sql = "select upper(subject),subcode from subjectmaster where subcode ='95' ORDER BY subject";
+		} else if (desgcode.equals("PD"))
+		{
+			sql = "select upper(subject),subcode from subjectmaster where subcode ='96' ORDER BY subject";
+		} else
+			//sql = "select upper(subject),subcode from subjectmaster where substring(subcode,1,1) !='v' ORDER BY subject ";
+			//for subject
+			//sql = "select upper(subject),subcode from subjectmaster where substring(subcode,1,1) !='v' and subcode in ('02','04','08') ORDER BY subject ";
+			sql = "select groupname,courseid from course where  delete_flag='f' ";
+*/
+		if("GEN".equals(ttype)){
+			sql = " select groupname,courseid from course where courseid in ('35','36','37','38','39') order by courseid::numeric ";
+		}
+		else{
+		String str="";
+		if(!collegeCode.equals("0")) str = " and a.collegecode='"+collegeCode+"'  ";
+		sql = "select  distinct(b.groupname),b.courseid from group_names a join course b on (a.groupname=b.courseid) where  a.isdelete=false and courseid not in ('35','36','37','38','39') "+str+"  ";
+		}
+		ArrayList values = new ArrayList();
+		try 
+		{
+			log(sql);
+			values = DatabasePlugin.selectQuery(sql);
+			log("" + values);
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	
+	public ArrayList getEmpSubjects(String desgcode, String collegeCode)
+	{
+		String sql;
+		log("==========desgcode=====" + desgcode);
+		/*if (desgcode.equals("JLV"))
+		{
+			sql = "select upper(subject),subcode from subjectmaster where substring(subcode,1,1) ='v' ORDER BY subject";
+		} else if (desgcode.equals("LB"))
+		{
+			sql = "select upper(subject),subcode from subjectmaster where subcode ='95' ORDER BY subject";
+		} else if (desgcode.equals("PD"))
+		{
+			sql = "select upper(subject),subcode from subjectmaster where subcode ='96' ORDER BY subject";
+		} else
+			//sql = "select upper(subject),subcode from subjectmaster where substring(subcode,1,1) !='v' ORDER BY subject ";
+			//for subject
+			//sql = "select upper(subject),subcode from subjectmaster where substring(subcode,1,1) !='v' and subcode in ('02','04','08') ORDER BY subject ";
+			sql = "select groupname,courseid from course where  delete_flag='f' ";
+*/
+		String str="";
+		if(!collegeCode.equals("0")) str = " and a.collegecode='"+collegeCode+"'  ";
+		sql = "select  b.groupname,b.courseid from group_names a join course b on (a.groupname=b.courseid) where  a.isdelete=false "+str+"  ";
+		System.out.println("11111111111111111111111111 "+sql);
+		ArrayList values = new ArrayList();
+		try 
+		{
+			log("2222222log:  "+sql);
+			values = DatabasePlugin.selectQuery(sql);
+			log("" + values);
+		} catch (Exception e)
+		{
+			log("getDistricts::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	
+	 
+	public ArrayList getCoursesList(String coll_code,String first_year)
+	{
+		 
+		ArrayList values = new ArrayList();
+		try
+		{
+			String sql = "select  program_name_combition||' ('||medium||')',course_code from course_master cm  inner join group_names g on  cm.slno=g.course_slno  and   acc_year='"+first_year+"' and collegecode='"+coll_code+"' order by 1";
+			log("getCoursesList sql-----------"+sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getCoursesList::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	}
+	public String getCourseName(String coursecode)
+	{
+		String sql = "select groupname from course where lower(course_short)='"+coursecode+"' ";
+		String course_name=null;
+		try
+		{
+			course_name = DatabasePlugin.getStringfromQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getCourseName=============>");
+			e.printStackTrace();
+		}
+		return course_name;
+	}
+
+	
+	public ArrayList getCoursesWithGroup_id(String coll_code,String first_year)
+	{
+		String sql=null;
+		ArrayList values = new ArrayList();
+		try
+		{
+			if(first_year!=null)
+			 sql = "select course_cat_name||' ('|| program_name_combition||') - '||medium,group_id from course_master cm inner join course_category cc on cm.course_cat_id=cc.course_cat_id  inner join group_names g on  cm.slno=g.course_slno  and    acc_year="+first_year+" and collegecode='"+coll_code+"' order by 1";
+			else
+				sql = "select course_cat_name||' ('|| program_name_combition||') - '||medium,group_id from course_master cm inner join course_category cc on cm.course_cat_id=cc.course_cat_id  inner join group_names g on  cm.slno=g.course_slno   and collegecode='"+coll_code+"' order by 1";	
+			//log("----------------------getCoursesList sql-------    2222222222222222----"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getCoursesList::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	} 
+	
+	public ArrayList getCoursesWithGroup_idForTeachingMentorMento(String coll_code)
+	{
+		String sql=null;
+		ArrayList values = new ArrayList();
+		try
+		{
+			sql="select course_cat_name||' ('|| program_name_combition||') - '||medium||'- '||case when self_finanaced is false then 'regular' else 'self' end," +
+					"course_slno||'-'||m_code||'-'||self_finanaced from course_master cm inner join course_category cc on cm.course_cat_id=cc.course_cat_id   "+
+					" inner join group_names g on  cm.slno=g.course_slno  and collegecode='"+coll_code+"'   group by 1,2 order by 1";
+		
+				//sql = "select course_cat_name||' ('|| program_name_combition||') - '||medium,group_id from course_master cm inner join course_category cc on cm.course_cat_id=cc.course_cat_id  inner join group_names g on  cm.slno=g.course_slno   and collegecode='"+user_serial_no+"' order by 1";	
+			log("group_id1====================== sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======group_id1======================::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	} 
+	
+	
+	public ArrayList getCoursesWithGroup_id1(String first_year,String user_serial_no)
+	{
+		String sql=null;
+		ArrayList values = new ArrayList();
+		try
+		{
+			if(first_year!=null)
+			 sql = "select course_cat_name||' ('|| program_name_combition||') - '||medium,group_id from course_master cm inner join course_category cc on cm.course_cat_id=cc.course_cat_id  inner join group_names g on  cm.slno=g.course_slno  and    acc_year="+first_year+" and collegecode='"+user_serial_no+"' order by 1";
+			else
+				sql = "select course_cat_name||' ('|| program_name_combition||') - '||medium,group_id from course_master cm inner join course_category cc on cm.course_cat_id=cc.course_cat_id  inner join group_names g on  cm.slno=g.course_slno   and collegecode='"+user_serial_no+"' order by 1";	
+			log("group_id1====================== sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======group_id1======================::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	} 
+	public ArrayList getCoursesWithPresentYear(String coll_code,String present_year)
+	{
+		 
+		ArrayList values = new ArrayList();
+		try
+		{
+			String sql = "select   course_cat_name||' ('|| program_name_combition||') - '||medium, g.group_id  from student_details s  inner join group_names g on g.group_id=s.group_id   inner join course_master c on  g.course_slno=slno  inner join course_category cc on c.course_cat_id=cc.course_cat_id  where coll_code='"+coll_code+"' and present_yr_study='"+present_year+"' group by 1,2   ";
+			log("getCoursesList sql-----------"+sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getCoursesList::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	} 
+	
+	
+	
+	public ArrayList getLevels(String university_code)
+	{
+		 
+		ArrayList values = new ArrayList();
+		try
+		{
+			String sql = "select program_name,cm.program_id from program_course pc  inner join course_master cm on pc.program_id=cm.program_id where university_code="+university_code+" group by  program_name,cm.program_id";
+			log("getLevels sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getLevels::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	}
+	
+	public ArrayList getPrograms(String university_code,String Program_id)
+	{
+		 
+		ArrayList values = new ArrayList();
+		try
+		{
+			String sql = "select course_cat_name,cm.course_cat_id from course_category pc  inner join course_master cm on pc.course_cat_id=cm.course_cat_id where case when "+university_code+"=null then true else  university_code="+university_code+" end  and pc.program_id="+Program_id+" group by  course_cat_name,cm.course_cat_id  ";
+			log("getPrograms sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getPrograms::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;		
+	}
+	
+	public ArrayList getTschePrograms(String Program_id)
+	{
+		 
+		ArrayList values = new ArrayList();
+		try
+		{
+			String sql = "select course_cat_name, course_cat_id from course_category pc   where   pc.program_id="+Program_id+" group by  course_cat_name,course_cat_id  ";
+			log("getPrograms sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getPrograms::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;		
+	}
+	
+	public ArrayList pg_entrance_course_category()
+	{
+		 
+		ArrayList values = new ArrayList();
+		try
+		{
+			String sql = "select course_cat_name,course_cat_id from course_category where course_cat_id in (13,16,17,20,29)";
+			log("pg_entrance_course_category sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getPrograms::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;		
+	}
+	
+	 
+	
+	public ArrayList getUniversityCoursesList(String university_code,String course_cat_id)
+	{
+		System.out.println("-------^^^^^");
+		ArrayList values = new ArrayList();
+		try
+		{
+			String sql = "select program_name_combition,slno from  course_master cm  where  university_code="+university_code+"  and course_cat_id="+course_cat_id+" order by 1";
+			log("getUniversityCoursesList sql-----------"+sql);
+			 
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("======getUniversityCoursesList::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values; 
+	}
+	
+	//swathi
+
+	public ArrayList getRooms()
+	{
+
+		String sql = "select roomname,roomid from rooms_master";
+		ArrayList values = new ArrayList();
+		try
+		{
+			log(sql);
+			values = DatabasePlugin.selectQuery(sql);
+			log("getRooms::=============>" + values);
+		} catch (Exception e)
+		{
+			log("getRooms::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+
+	public ArrayList getLabs()
+	{
+
+		String sql = "select labname,labid from labs_master";
+		ArrayList values = new ArrayList();
+		try
+		{
+			log("Labs List:" + sql);
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getRooms::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+
+	public ArrayList getempTypes(String post,String management)
+	{
+		ArrayList values = new ArrayList();
+		String sql="";
+		try {
+			log("management::::::::"+management);
+		if("1".equals(management)||"2".equals(management)||"3".equals(management)||"4".equals(management)||"8".equals(management))
+		{
+				String posts ="select emp_type from designationmaster where desigcode='"+ post + "' and case when desigcode in ('12','13') then true else delete_flag=false end ";
+				log("posts SQL:" + posts);
+						posts=DatabasePlugin.getStringfromQuery(posts);
+				log("posts:" + posts);
+				
+				
+				if (posts != null && posts.length()>0) { 
+				  sql = "select type,typeid from employment_types where typeid in("+ posts + ")"; 
+				log("SQL:" + sql);
+				}
+		}
+		else
+		{
+			 sql = "select type,typeid from employment_types where typeid in('9','10','11')";
+		}
+		
+		
+		
+			values = DatabasePlugin.selectQuery(sql);
+			log("ArrayList:" + values);
+		} catch (Exception e)
+		{
+			log("getemp types::Error=============>");
+			e.printStackTrace();
+		}
+		 
+		return values;
+
+	}
+
+	/*
+	 * public ArrayList getYearsTillDate(int startYear) { ArrayList years = new
+	 * ArrayList(); int currDate = Calendar.getInstance().get(Calendar.YEAR);
+	 * try { years.add(new LabelValueBean("- - - -","0")); for (int
+	 * i=currDate;i>=startYear;i--) { years.add(new
+	 * LabelValueBean(Integer.toString(i),Integer.toString(i))); } return years;
+	 * } catch(Exception e){ e.printStackTrace(); }
+	 * 
+	 * return years; }
+	 */
+
+	public ArrayList getYearsTillDate(int startYear)
+	{
+		ArrayList years = new ArrayList();
+		int currDate = Calendar.getInstance().get(Calendar.YEAR);
+		try
+		{
+			//years.add(new LabelValueBean("- - - -", "0"));
+			for (int i = startYear; i <= currDate; i++)
+			{
+				years.add(new LabelValueBean(Integer.toString(i), Integer
+						.toString(i)));
+			}
+			return years;
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return years;
+	}
+
+	public static void log(String aMessage)
+	{
+		System.out.println(aMessage);
+	}
+ 
+	public synchronized boolean uploadCollegePlanImages(
+			FormFile fileObj, String dirPath, String fileName)
+	{
+		try
+		{ 
+			InputStream is = fileObj.getInputStream();
+
+			String filePath = null;
+			String filename = null;
+
+			if (isNull(fileName))
+			{
+				filePath = dirPath + fileObj.getFileName();
+				System.out.println(filePath);
+			} 
+			else
+			{
+				
+				if ("image/jpeg".equalsIgnoreCase(fileObj.getContentType()) || "image/pjpeg".equalsIgnoreCase(fileObj.getContentType()))
+				{
+					filename = fileName + ".jpeg";
+					filePath = dirPath + filename;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			
+			OutputStream bos = new FileOutputStream(filePath);
+			int bytesRead = 0;
+			byte[] buffer = new byte[18192];
+
+			while ((bytesRead = is.read(buffer, 0, 18192)) != -1)
+			{
+				bos.write(buffer, 0, bytesRead);
+			} // end of while
+			bos.close();
+		} catch (IOException e)
+		{
+
+			log(e.getMessage());
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public static String getPath(HttpServletRequest request, String folders) {
+		String path = "";
+
+		try {
+
+			//String filesepartor = System.getProperty("file.separator");
+			//String contextPath = (String) request.getContextPath(), contextname = "";
+			/*if (contextPath.length() > 0)
+				contextname = ((String) request.getContextPath()).substring(1);
+			else
+				contextname = "CCETS";*/
+
+			//String[] newfolders = folders.split("/");
+			path = request.getRealPath("/") + folders;
+			path.replace("\\", "/");
+			if (new File(path).exists()) {
+
+			} else
+				new File(path).mkdirs();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return path;
+	}
+	
+	public static boolean deleteFile(String file_path,HttpServletRequest request)
+	{
+		log("file_path::"+file_path);
+		File fileToCreate = new File(request.getRealPath("/")+file_path);
+		if(fileToCreate.exists())
+		{
+			 
+			if(fileToCreate.delete())
+				return true;
+			else
+				return false;
+		}
+		log("850:Commonfunctions.deleteFile()::File Doesnot Exist");
+		return false;
+	}
+	public static String uploadingFile(FormFile fileObj, String dirPath,String renamename_with_out_extension,HttpServletRequest request) {
+
+		try {
+			String path = "";
+			path = request.getRealPath("/") + dirPath;
+			path.replace("\\", "/");
+			if (new File(path).exists()) {
+
+			} else
+				new File(path).mkdirs();
+			
+			renamename_with_out_extension=renamename_with_out_extension+(fileObj.getFileName().substring(fileObj.getFileName().lastIndexOf('.'), fileObj.getFileName().length()));
+			InputStream is = fileObj.getInputStream();
+			String filePath = path + fileObj.getFileName();
+			OutputStream bos = new FileOutputStream(filePath);
+			int bytesRead = 0;
+			byte[] buffer = new byte[18192];
+
+			while ((bytesRead = is.read(buffer, 0, 18192)) != -1) {
+				bos.write(buffer, 0, bytesRead);
+			} // end of while
+			bos.close();
+			File f = new File(filePath);
+			File fileToCreate = new File(path + "/" + renamename_with_out_extension);
+			deleteFile(dirPath + "/" + renamename_with_out_extension,request);			
+			f.renameTo(new File(path + "/" + renamename_with_out_extension));
+		} catch (IOException e) {
+			commonFunctions.log("Exceptions in uploadingFile----------------------------");
+			e.printStackTrace();
+			return null;
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return null;
+		}
+		return renamename_with_out_extension;
+	}
+
+	/**
+	 * isNull function checks a string is null return boolean
+	 */
+
+	public static boolean isNull(Object value)
+	{
+		return (null == value) || "".equals(value.toString().trim());
+	}
+	
+	public static String checkvalue(Object value)
+	{
+		if((null == value) || "".equals(value.toString().trim()))
+		return  null;
+		else
+			return value.toString().trim();
+	}
+	
+	public static String checkValueReturnMT(Object value)
+	{
+		if((null == value) || "".equals(value.toString().trim()))
+		return  "";
+		else
+			return value.toString().trim();
+	}
+	
+	
+	/*public static Map<String, String> BIEData(String uid)
+			throws SQLException {
+		 Map<String, String> row = new HashMap();
+		try {
+			
+			CCEServicePortTypeProxy proxy =new CCEServicePortTypeProxy(); 
+			//CCEData data = proxy.CCEStudentData("biECcEtS", "b!E#cCe15tS", "1513510234");
+			CCEData data = proxy.CCEStudentData("biECcEtS", "b!E#cCe15tS", uid);
+			//System.out.println("data--"+data);
+			
+			row.put("message", data.getMessage());
+			row.put("cname", data.getCname() );
+			row.put("fname", data.getFname() );
+			row.put("mname", data.getMname() );
+			row.put("gender", data.getGender() );
+			row.put("appl_dob", data.getAppl_dob() );
+			row.put("rollno", data.getRollno() ); 
+			row.put("ph", data.getPh() );
+			row.put("ssc_exam_no", data.getSsc_exam_no() );
+			row.put("religion", data.getReligion() ); 
+			row.put("caste", data.getCaste() );
+			row.put("sub_caste", data.getSub_caste() );
+			row.put("studied_at", data.getStudied_at() );
+			row.put("uid", data.getUid() );
+			row.put("course_name", data.getCourse_name() );
+			row.put("medium", data.getMedium() );
+			row.put("mole1", data.getIdentification_mark1() );
+			row.put("mole2", data.getIdentification_mark1() );
+			
+			System.out.println("BIE Data:"+row);
+			
+			 
+	 
+	}catch (Exception se) {
+		se.printStackTrace();
+	}
+		return row;
+		
+	}*/
+	public static Map<String, String> BIEData(String uid)
+			throws SQLException {
+		 Map<String, String> row = new HashMap();
+		try {
+			
+			CCEServicePortTypeProxy proxy =new CCEServicePortTypeProxy(); 
+			//CCEData data = proxy.CCEStudentData("biECcEtS", "b!E#cCe15tS", "1513510234");
+			CCEData data = proxy.CCEStudentData("biECcEtS", "b!E#cCe15tS", uid);
+			commonFunctions.log("data--"+data.getCname()+"---"+data.getFname());
+			//commonFunctions.log("getPassportphotoBase64--"+data.getPassportphotoBase64());
+			if(data.getRollno()!=null && !data.getRollno().equals(""))
+			{
+			row.put("message", commonFunctions.checkValueReturnMT(data.getMessage()));
+			row.put("cname", commonFunctions.checkValueReturnMT(data.getCname()) );
+			row.put("fname", commonFunctions.checkValueReturnMT(data.getFname()) );
+			row.put("mname", commonFunctions.checkValueReturnMT(data.getMname()) );
+			row.put("gender", commonFunctions.checkValueReturnMT(data.getGender()) );
+			//row.put("pass_year", data.get);
+			row.put("appl_dob", commonFunctions.checkValueReturnMT(data.getAppl_dob()).replace("-", "/") );
+			row.put("rollno", commonFunctions.checkValueReturnMT(data.getRollno()) ); 
+			row.put("ph", commonFunctions.checkValueReturnMT(data.getPh()) );
+			row.put("ssc_exam_no", commonFunctions.checkValueReturnMT(data.getSsc_exam_no()) );
+			row.put("religion", commonFunctions.checkValueReturnMT(data.getReligion()) ); 
+			row.put("caste", commonFunctions.checkValueReturnMT(data.getCaste()) );
+			row.put("sub_caste", commonFunctions.checkValueReturnMT(data.getSub_caste()) );
+			row.put("studied_at", commonFunctions.checkValueReturnMT(data.getStudied_at()) );
+			row.put("uid", commonFunctions.checkValueReturnMT(data.getUid()) );
+			row.put("course_name", commonFunctions.checkValueReturnMT(data.getCourse_name()) );
+			row.put("medium", commonFunctions.checkValueReturnMT(data.getMedium()) );
+			row.put("mole1", commonFunctions.checkValueReturnMT(data.getIdentification_mark1()) );
+			row.put("mole2", commonFunctions.checkValueReturnMT(data.getIdentification_mark2()) );
+			row.put("marks_secured", commonFunctions.checkValueReturnMT(data.getObtained_marks()) );
+			row.put("max_marks", commonFunctions.checkValueReturnMT(data.getMax_marks())  );
+			row.put("inter_course", commonFunctions.checkValueReturnMT(data.getCourse_name()) );
+			row.put("mobile", commonFunctions.checkValueReturnMT(data.getPh()) );
+			row.put("photo", commonFunctions.checkValueReturnMT(data.getPassportphotoBase64()));
+			row.put("inter_course_code", commonFunctions.checkValueReturnMT(data.getInter_course_code()));
+			
+			row.put("lang_max_marks", commonFunctions.checkValueReturnMT(data.getLang_max()));
+			row.put("lang_obt_marks", commonFunctions.checkValueReturnMT(data.getLang_obt()));
+
+			row.put("other_max_marks", commonFunctions.checkValueReturnMT(data.getOther_max()));
+			row.put("other_obt_marks", commonFunctions.checkValueReturnMT(data.getOther_obt()));
+			}
+			else
+				row=null;
+			
+			
+			log("BIE Data:"+row);
+			
+			 
+	 
+	}catch (Exception se) {
+		se.printStackTrace();
+	}
+		return row;
+		
+	}
+	public static boolean fileFormatCheck(FormFile fileObj, String filetype)
+			throws Exception {
+		// ipg --- "image/jpeg"
+		// .doc---- "application/msword"
+		// .pdf---- "application/pdf"
+		boolean ischeck = false;
+
+		String type = fileObj.getFileName().substring(
+				fileObj.getFileName().lastIndexOf('.'),
+				fileObj.getFileName().length());
+		String extension = "";
+		if (fileObj != null && (!fileObj.equals(""))
+				&& fileObj.getFileSize() > 0) {
+			// System.out.println(type);
+			if (filetype.equalsIgnoreCase("image/jpeg")) {
+				extension = ".jpg";
+			} else if (filetype.equalsIgnoreCase("application/msword")) {
+				extension = ".doc";
+			} else if (filetype.equalsIgnoreCase("application/pdf")) {
+				extension = ".pdf";
+			} else if (filetype.equalsIgnoreCase("text/csv")) {
+				extension = ".csv";
+			} else if (filetype.equalsIgnoreCase("application/text")) {
+				extension = ".txt";
+			} else if (filetype.equalsIgnoreCase("application/vnd.ms-excel")) {
+				extension = ".csv";
+			}
+			// System.out.println(type+" ----type--extension-- "+extension);
+			if ((type.equalsIgnoreCase(extension))
+					&& filetype.equals(fileObj.getContentType())) {
+				// System.out.println("Success extension: "+type);
+				ischeck = true;
+			} else {
+				// System.out.println("Failed extension: "+type);
+				ischeck = false;
+			}
+
+			// System.out.println("ischeck-- "+ischeck);
+		}
+
+		return ischeck;
+	}
+	public ArrayList college_coureses_list(String coll_code)
+	{
+
+		String sql = "select distinct(c.groupname),courseid from college_master cm inner join group_names g on g.collegecode=cm.newcollegecode inner join course c on c.courseid=g.groupname where collegecode='"+coll_code+"'";
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+			System.out.println("values==="+values);
+
+		} catch (Exception e)
+		{
+			log("college course_list::Error=============>");
+			e.printStackTrace();
+
+		}
+		return values;
+	}
+	public ArrayList getSubjectsList(String courseid,String college_code)
+	{
+		//wrong query 06-07-2015
+		String sql = "select subject_name||' ('||year_sem_no||'-Year)'  ,subject_id from group_names g inner join curriculum_subjects sm on sm.course_slno=g.course_slno where g.group_id='"+courseid+"'    order by year_sem_no";
+		ArrayList values = new ArrayList();
+		try
+		{
+			values = DatabasePlugin.selectQuery(sql);
+			System.out.println("sql subject_list=="+sql);
+			System.out.println("values==="+values);
+
+		} catch (Exception e)
+		{
+			log("SubjectsList::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	public ArrayList GetAllSubjectsList()
+	{
+		//wrong query 06-07-2015
+		String sql = "select subject_name,subject_id from subjects_master";
+		ArrayList values = new ArrayList();
+		try
+		{
+			values = DatabasePlugin.selectQuery(sql);
+			System.out.println("sql all subject_list=="+sql);
+
+		} catch (Exception e)
+		{
+			log("allSubjectsList::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	
+	public ArrayList getMLAConstiuency(String districtId)
+	{
+		String sql = "select upper(aname),acode from mla_const_mst where dist_code="
+				+ districtId + " order by aname";
+		
+		log("sql getMandals---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getMandals::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	public ArrayList getMedium()
+	{
+		String sql = "select name,id from medium";
+		
+		log("sql mediums---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("mediums::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	public ArrayList getAllMediums()
+	{
+		String sql = "select name,medium_code from medium";
+		
+		log("sql mediums---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("mediums::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	
+	public ArrayList getAcYears()
+	{
+		String sql = "select  ac_year,ac_year  from ac_year where is_active=true and  ac_year!='2016' order by 1  DESC";
+		
+		log("sql getAcYears---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getAcYears::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	public ArrayList getAcYears1()
+	{
+		String sql = "select  ac_year,ac_year  from ac_year where is_active=true  order by 1  DESC";
+		
+		log("sql getAcYears---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getAcYears::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	public ArrayList getTscheColleges(String university_code)
+	{
+		String sql = "select college_name||','||coalesce(address,'')||'('|| college_code ||')' ,college_code from tsche_college_master where   university_code='"+university_code+"'   order by 1";
+		
+		log("sql getTscheColleges---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getTscheColleges::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	
+	public ArrayList getTscheCollegeCourses(String college_code)
+	{
+		String sql = "select course_cat_name||'('|| program_name_combition||')-' ||m.name,ccm.slno  from college_course_mapping ccm inner join  tsche_course_master cm on  ccm.course_code=cm.course_code  inner join course_category c on cm.course_cat_id=c.course_cat_id  inner join tsche_college_master tcm on ccm.college_code=tcm.college_code  inner join medium m on ccm.medium=m.medium_code where ccm.college_code='"+college_code+"'    order by course_cat_name,subject1,subject2,subject3 ";
+		
+		log("sql getTscheCollegeCourses---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getTscheColleges::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	public ArrayList getTscheCourses()
+	{
+		String sql = "select course_cat_name||'('|| program_name_combition||')',course_code from  tsche_course_master cm inner join course_category c on cm.course_cat_id=c.course_cat_id   order by course_cat_name,subject1,subject2,subject3";
+		
+		log("sql getTscheCourses---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getTscheCourses::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	public ArrayList getUniversities()
+	{
+		String sql = "select university_name,university_code from university_master where university_code not in (1,8)  order by  university_name";
+		
+		log("sql getTscheUniversities---"+sql);
+		ArrayList values = new ArrayList();
+		try
+		{
+
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getTscheCourses::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	public ArrayList getJoining_Years()
+	{
+		String sql = "select  distinct(joining_year) from student_details where joining_year in(2015,2014,2013) order by joining_year desc";
+		ArrayList values = new ArrayList();
+		try
+		{
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getStudentJoining_Years::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	public ArrayList getTelanganaDistricts()
+	{
+		String sql = "select upper(district_name),district_id from districts  order by district_name";
+		ArrayList values = new ArrayList();
+		try
+		{
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getTelanganaDistricts::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	public ArrayList getTelanganaDistricts(String university_code)
+	{
+		String sql = "select upper(district_name),district_id from tsche_college_master t  inner join districts d  on t.districtid=d.district_id where university_code='" +university_code+"' group by 1,2";
+		ArrayList values = new ArrayList();
+		try
+		{
+			values = DatabasePlugin.selectQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getTelanganaDistricts::Error=============>");
+			e.printStackTrace();
+		}
+		return values;
+	}
+	
+	public String getFileId()
+	{
+		String sql = "SELECT NEXTVAL('EMPLOYEE_FILE_ID')";
+		String fileid="0";
+		try
+		{
+			fileid = DatabasePlugin.getStringfromQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getFileId::Error=============>");
+			e.printStackTrace();
+		}
+		return fileid;
+	}
+	public String getNSSFileId()
+	{
+		String sql = "SELECT NEXTVAL('nss_file_id')";
+		String fileid="0";
+		try
+		{
+			fileid = DatabasePlugin.getStringfromQuery(sql);
+
+		} catch (Exception e)
+		{
+			log("getFileId::Error=============>");
+			e.printStackTrace();
+		}
+		return fileid;
+	}
+	public ArrayList getEmployeeslist(String college_code) throws Exception
+	{ 
+		String sql="select coalesce(name,'-')|| ' ' ||coalesce(surname,'') || '      (' ||d.designation || ')'as emp_name,emp_id from employee_details e  inner join designationmaster d  on  e.designation=d.desigcode::text   where college='"+college_code+"'";
+		log("sql::"+sql);
+		ArrayList values = new ArrayList();
+		values = DatabasePlugin.selectQuery(sql);
+		return values;
+	}
+	public ArrayList getTeachingEmployeeslist(String college_code) throws Exception
+	{ 
+		String sql="select coalesce(name,'-')|| ' ' ||coalesce(surname,'') || '      (' ||d.designation || ')'as emp_name,emp_id from employee_details e  inner join designationmaster d  on  e.designation=d.desigcode::text   where college='"+college_code+"' and e.desg_type='T'";
+		log("sql::"+sql);
+		ArrayList values = new ArrayList();
+		values = DatabasePlugin.selectQuery(sql);
+		return values;
+	}
+	
+	public ArrayList getEmployeeslistForTrainings(String college_code) throws Exception
+	{ 
+		String sql="select coalesce(name,'-')|| ' ' ||coalesce(surname,'') || '      (' ||d.designation || ')'as emp_name,emp_id from employee_details e  inner join designationmaster d  on  e.designation=d.desigcode::text   where college='"+college_code+"' and e.desg_type='T' and e.emp_type='1'";
+		log("sql::"+sql);
+		ArrayList values = new ArrayList();
+		values = DatabasePlugin.selectQuery(sql);
+		return values;
+	}
+	
+	
+	
+	
+	public ArrayList getEmployeeTraininglist() throws Exception
+	{ 
+		String sql="select training_name||'('||to_char(training_date,'dd MON')||')'||'-'||duration||' Days',tf.training_sno from training_for_faculty_master tf  left join trainings_employees_mapping t  on   tf.training_sno=t.training_sno  group by 1,2,training_name,training_date   order by training_name,training_date ";
+		log("sql===::"+sql);
+		ArrayList values = new ArrayList();
+		values = DatabasePlugin.selectQuery(sql);
+		return values;
+	}
+	
+	public ArrayList getNssUnitsList(String college_code) throws Exception
+	{ 
+		String sql="select unit_name,unit_no from nss_units where college_code='"+college_code+"'";
+		System.out.println("getNssUnitsList:: "+sql);
+		ArrayList values = new ArrayList();
+		values = DatabasePlugin.selectQuery(sql);
+		return values;
+	}
+	public ArrayList getManatvsubjets(String class_date) throws Exception
+	{ 
+		if(class_date==null || "".equals(class_date))
+		{
+			//class_date="class_date=current_date";
+			class_date="true";
+		}
+		else
+			class_date="class_date=to_date('"+class_date+"','dd/mm/yyyy')";
+		String sql="select coalesce(subject_name,subject_description)||coalesce(' : '||class_topic,''),class_no from manatv_classes left join subjects_master on subject_id=subject_code where "+class_date;
+		log("getManatvsubjets::"+sql);
+		ArrayList values = new ArrayList();
+		values = DatabasePlugin.selectQuery(sql);
+		return values;
+	}
+	
+	  public static String getCoursesByCourseLevel(String courseLevel,String college_code) throws Exception {
+		    StringBuffer data = null;
+		  
+		    //String sql = "select stu_id,stu_name ||' - '||roll_num||' - '|| case present_yr_study when '1' then 'FirstYear' when '2' then 'Second Year'   when '3' then 'Thirdyear' else '-' end present_yr_study1 from student_details where group_id in (select group_id  from group_names where course_slno in (select course_slno from group_names where group_id="+courseLevel+") ) and coll_code in (select collegecode from group_names where group_id="+courseLevel+")  order by present_yr_study desc,stu_name";
+		    String sql="  select stu_id,stu_name ||' - '||roll_num||' - '|| case present_yr_study when '1' then 'FirstYear' when '2' then 'Second Year'   when '3' then 'Thirdyear'  "+
+			    	"   else '-' end present_yr_study1 from student_details where group_id in (select group_id from group_names where course_slno='"+courseLevel+"'    and coll_code='"+college_code+"')  "+
+			    	"   and present_yr_study in ('1','2','3') order by present_yr_study asc,stu_name ";
+		    
+		    log("getCoursesByCourseLevel:: "+sql);
+		    ArrayList values = new ArrayList();
+		    values=DatabasePlugin.selectQuery(sql);
+		    for (int i=0;i<values.size();i++) {
+		    	if(data==null){
+					data=new StringBuffer();
+					data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+				}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		    }
+		   
+		    return data != null ? data.toString() : null;
+		}
+		
+		public static String getStudentsByCertificateCourse(String courseLevel,String college_code) throws Exception {
+		    StringBuffer data = null;
+		    
+		    String sql = "select  s.stu_id,stu_name ||' - '||roll_num||' - '|| case present_yr_study when '1' then 'FirstYear' when '2' then 'Second Year'   when '3' then 'Thirdyear' else '-' end present_yr_study1  from certify_courses_stnds_mapping cc inner join student_details s on s.stu_id=cc.student_id where certification_course_sno="+courseLevel+" and cc.college_code='"+college_code+"' order by present_yr_study desc,stu_name";
+		  
+		    log("getStudentsByCertificateCourse::"+sql);
+		    ArrayList values = new ArrayList();
+		    values=DatabasePlugin.selectQuery(sql);
+		    for (int i=0;i<values.size();i++) {
+		    	if(data==null){
+					data=new StringBuffer();
+					data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+				}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		    }
+		    
+		    return data != null ? data.toString() : null;
+		}
+		
+		public static String getStudentsByPgEntranceTraining(String courseLevel,String college_code) throws Exception {
+		    StringBuffer data = null;
+		    
+		    String sql = "select  s.stu_id,stu_name ||' - '||roll_num||' - '|| case present_yr_study when '1' then 'FirstYear' when '2' then 'Second Year'   when '3' then 'Thirdyear' else '-' end present_yr_study1  from certify_courses_stnds_mapping cc inner join student_details s on s.stu_id=cc.student_id where certification_course_sno="+courseLevel+" and cc.college_code='"+college_code+"' order by stu_name";
+		    log("getStudentsByCertificateCourse::"+sql);
+		    ArrayList values = new ArrayList();
+		    values=DatabasePlugin.selectQuery(sql);
+		    for (int i=0;i<values.size();i++) {
+		    	if(data==null){
+					data=new StringBuffer();
+					data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+				}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		    }
+		    
+		    return data != null ? data.toString() : null;
+		}
+		
+		public static String getStudentsBybatallion(String courseLevel,String college_code) throws Exception {
+		    StringBuffer data = null;
+		    
+		    String sql = "select  s.stu_id,s.stu_name  from ncc_students_mapping nm inner join ncc_details nd on nd.ncc_det_id=nm.battalion_id  inner join student_details s on s.stu_id=nm.student_id where battalion_id="+courseLevel+" and nd.college_code='"+college_code+"' order by stu_name";
+		    ArrayList values = new ArrayList();
+		    values=DatabasePlugin.selectQuery(sql);
+		    for (int i=0;i<values.size();i++) {
+		    	if(data==null){
+					data=new StringBuffer();
+					data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+				}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		    }
+		    
+		    return data != null ? data.toString() : null;
+		}
+		    
+		    public static String getEmployeeTrainings(String emp_id,String college_code) throws Exception {
+			    StringBuffer data = null;
+			    
+			    String sql = "select t.training_sno,training_name||'('||to_char(training_date,'dd MON')||')'||'-'||duration||' Days' from training_for_faculty_master t  inner join  trainings_employees_mapping  m on t.training_sno=m.training_sno  where emp_id ='"+emp_id+"'   order by  training_date";
+			    ArrayList values = new ArrayList();
+			    values=DatabasePlugin.selectQuery(sql);
+			    for (int i=0;i<values.size();i++) {
+			    	if(data==null){
+						data=new StringBuffer();
+						data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+					}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+			    }
+		    
+		    return data != null ? data.toString() : null;
+		}
+	
+		public static String getStudentsByCourse(String courseLevel,String college_code) throws Exception {
+		    StringBuffer data = null;
+		    
+		    String sql = "select  s.stu_id,s.stu_name  from ncc_students_mapping nm inner join ncc_details nd on nd.ncc_det_id=nm.battalion_id  inner join student_details s on s.stu_id=nm.student_id where battalion_id="+courseLevel+" and nd.college_code='"+college_code+"' order by stu_name";
+		    ArrayList values = new ArrayList();
+		    values=DatabasePlugin.selectQuery(sql);
+		    for (int i=0;i<values.size();i++) {
+		    	if(data==null){
+					data=new StringBuffer();
+					data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+				}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		    }
+		    
+		    return data != null ? data.toString() : null;
+		}
+	
+		
+	
+public  String checkfileformat(FormFile myFile,String fileName,String upload_path,String contextpath,String empid,int maxlength,int minlength) throws Exception
+{
+			commonFunctions cf=new commonFunctions();
+			String path=null;String filepath=null;String dbpath=null;
+			path = contextpath;
+			 boolean falg=false;
+			 int size=myFile.getFileSize();
+				double filesize=size/1024;
+//log("filesize::"+filesize);
+				try 
+				{
+				if(fileName != null && !fileName.equals("") &&  (filesize<maxlength)  &&  (filesize>minlength) && cf.fileFormatCheck(myFile, "image/jpeg")) 
+				{
+					String type = myFile.getFileName().substring(
+							myFile.getFileName().lastIndexOf('.'),
+							myFile.getFileName().length());
+					filepath=upload_path;
+					path =path+filepath;
+					
+				   File folder2 = new File(path);
+				   if(!folder2.exists())
+					{
+					   folder2.mkdirs();
+					}
+				    dbpath=empid+type;
+				   fileName=path+dbpath;
+				   dbpath=filepath+dbpath;
+				 
+				if(!fileName.equals(""))
+				{  
+					File fileToCreate = new File(fileName);
+						{
+							FileOutputStream fileOutStream = new FileOutputStream(fileToCreate);
+							fileOutStream.write(myFile.getFileData());
+							fileOutStream.flush();
+							fileOutStream.close();
+						}  
+
+					
+				}
+				}
+				} 
+				catch (Exception e) 
+				{
+					e.printStackTrace();
+					return null;
+				}
+			 return dbpath;
+		 }
+public ArrayList getCastes()
+{
+	String sql = "select caste_desc,caste_code  from pmss_castes_mst";
+	log("sql getCastes---"+sql);
+	ArrayList values = new ArrayList();
+	try
+	{
+
+		values = DatabasePlugin.selectQuery(sql);
+
+	} catch (Exception e)
+	{
+		log("getCastes::Error=============>"+sql);
+		e.printStackTrace();
+	}
+	return values;
+}
+public ArrayList getAllSubjectsList()
+{
+	String sql = "select subject_name,subject_id from subjects_master ";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getAllSubjectsList::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public ArrayList getBankNames()
+{
+	String sql = "select bank_name,bank_rbi_code from banks_all_mst order by bank_name ";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getBankNames::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public ArrayList getBankBranchNames(String bankcode,String distcode)
+{
+	String sql=null;
+	if(bankcode!=null)
+	 sql = "select branch_name_in_bank||' ---  '||ifsccode,ifsccode from pmss_bank_branches_ifsc where bankers_code='"+bankcode+"' and bank_dist_code='"+distcode+"' order by branch_name_in_bank";
+	else
+		sql = "select branch_name_in_bank||' ---  '||ifsccode,ifsccode from pmss_bank_branches_ifsc order by branch_name_in_bank";
+	commonFunctions.log("ifsc sql:::: "+sql);
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getBankNames::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public ArrayList getPrograms()
+{
+	String sql=null;
+	
+	 sql = "select groupname,courseid from course order by 1";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getPrograms::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public ArrayList getCourses(String universitycode,String program)
+{
+	String sql=null;
+	
+	 sql = "select program_name_combition,course_code from course_master where university_code= "+universitycode+"  and program_id= "+program+"   order by 1";
+	 System.out.println("sql----"+sql);
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getCourses::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+
+public ArrayList getFirst_year_Courses(String coll_code,String first_year)
+{
+	String sql=null;
+	
+	log("getCourses::Error=============>");
+	ArrayList values = new ArrayList();
+	try
+	{
+		 sql = "select cc.course_cat_name||'('||program_name_combition||')-'||medium||'-'||case when self_finanaced=true then 'Self-finanaced' else 'Regular' end,g.group_id from course_master c inner join course_category cc on c.course_cat_id=cc.course_cat_id " +
+			 		" inner join group_names g on c.slno=g.course_slno where g.acc_year='"+first_year+"' and collegecode='"+coll_code+"'  order by 1";
+		 System.out.println("sql----"+sql);
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getCourses::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+public ArrayList getcertification_Courses(String cert_code)
+{
+	
+	
+	String sql=null;
+
+	ArrayList values = new ArrayList();
+	try
+	{
+	System.out.println("--------"+cert_code);
+	if(cert_code!=null)
+	 sql = "select course_name,course_code from certificate_courses where category_code='"+cert_code+"' order by 1";
+	else 
+		sql = "select course_name,course_code from certificate_courses  order by 1";
+	 System.out.println("sql----"+sql);
+	
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getcertification_Courses::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public ArrayList getCertification_Courses_Category()
+{
+	String sql=null;
+	 sql = "select cat_description,category_code from certificate_courses_categories  order by 1 ";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getcertification_Courses::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public static ArrayList getsubcastes(String code)
+{
+	String sql=null;
+		if(code!=null)
+	 sql = "select sub_caste_desc,sub_caste_code from pmss_subcastes_mst where caste_code='"+code+"' order by sub_caste_code ";
+		/*if(getBeanProperties("college_code") !=null)
+			 sql = "select sub_caste_desc,sub_caste_code from pmss_subcastes_mst where caste_code='"+code+"' order by sub_caste_code ";*/
+		else
+			sql = "select sub_caste_desc,sub_caste_code from pmss_subcastes_mst order by sub_caste_code ";
+	System.out.println("sql-----getsubcastes-----"+sql+"--"+ code);
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getsubcastes::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public static ArrayList getsecondlanguages()
+{
+	String sql=null;
+	 sql = "select subject_name,subject_id from subjects_master where type='L' order by subject_name ";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getsecondlanguages::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public int getDaysinMonth(int month,int year)
+{
+	int daysInMonth=0;
+	boolean leapYear=true;
+	if(year%4!=0)
+		leapYear=false;
+		
+	if (month == 4 || month == 6 || month == 9 || month == 11)
+	{
+		daysInMonth = 30;
+	}
+	else if (month == 2) 
+	{
+		daysInMonth = (leapYear) ? 29 : 28;
+	}
+	else 
+	{
+		daysInMonth = 31;
+	}
+	return daysInMonth;
+}
+public String getMonthName(int monthid) throws Exception
+{
+	String [] months={"January","February","March","April","May","June","July","August","September","October","November","December"};
+	String monthname=months[monthid-1];
+	return monthname;
+}
+
+public static boolean checkunique_aadhar(String table_name,String column_name,String uid,String type)
+{
+	try
+	{
+	String sql = "select count(*) from  "+table_name+" where "+column_name+"="+uid+";";
+	commonFunctions.log("sql::"+sql);
+	int i=Integer.parseInt(DatabasePlugin.getStringfromQuery(sql));
+	
+	if(("update".equals(type) && i<2))
+		return true;
+	else if(i>0)
+		return false;
+	
+	else
+		return true;
+	}
+	catch (Exception e) {
+		// 
+		e.printStackTrace();
+		return false;
+	}
+}
+
+public static String getContentsBySubject(String subjectid) throws Exception {
+	   
+    StringBuffer data = null;
+    String sql = "select  sno,contents  from curriculum where subject_code='"+subjectid+"' ";
+    log("getContentsBySubject::"+sql);
+    ArrayList values = new ArrayList();
+    values=DatabasePlugin.selectQuery(sql);
+    for (int i=0;i<values.size();i++) {
+    	if(data==null){
+			data=new StringBuffer();
+			data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+    }
+   
+    return data != null ? data.toString() : null;
+}
+
+/*public static String getUnitTestSyllobus(String test_id,String college_code,String subjectid) throws Exception {
+    StringBuffer data = null;
+    String sql = "select sno,chapter_no from unit_test_syllabus where college_code='"+college_code+"' and unit_test_no='"+test_id+"' and subject_code='"+subjectid+"'";
+    System.out.println("---sql---"+sql);
+    ArrayList values = new ArrayList();
+    values=DatabasePlugin.selectQuery(sql);
+    for (int i=0;i<values.size();i++) {
+    	if(data==null){
+			data=new StringBuffer();
+			data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+    }
+    
+    return data != null ? data.toString() : null;
+}*/
+public ArrayList getTests(String subject_id)
+{
+	String sql = "select unit_test_name,* from unit_tests_names where sno not in (select unit_test_no from unit_test_details where subject_id='"+subject_id+"') order by sno";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getTests::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+public ArrayList getScheduledUnitTests(String Coll_code,String course_id)
+{
+	String sql = "select unit_test_name,unit_test_no from unit_test_details ud inner join unit_tests_names un on ud.unit_test_no=un.sno where ud.college_code='"+Coll_code+"'   group by  1,2";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getTests::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+public ArrayList getScheduledUnitTestSubjects(String Coll_code,String unit_test_no)
+{
+	String sql = "select subject_name,sno from unit_test_details ud inner join curriculum_subjects sm on sm.subject_id=ud.subject_id  where ud.college_code='"+Coll_code+"'  and unit_test_no='"+unit_test_no+"' order by 1";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getTests::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+
+public ArrayList getUnittests(String college_code)
+{
+
+	String sql="select  unit_test_name,unit_test_no from unit_test_details u inner join unit_tests_names utn on u.unit_test_no=utn.sno  inner join curriculum_subjects s on u.subject_id=s.subject_id  where u.college_code='"+college_code+"' group by 1,2";
+	ArrayList values=new ArrayList();
+	try
+	{
+		values=DatabasePlugin.selectQuery(sql);
+	}
+	catch(Exception e)
+	{
+	 
+		e.printStackTrace();
+	}
+	
+	return values;
+}
+public ArrayList getTestslist(String coursecode,String college_code)
+{
+	String sql = "select unit_test_no,unit_test_no from unit_test_syllabus where college_code='"+college_code+"' and branch='"+coursecode.toUpperCase()+"' order by sno";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getTests::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public ArrayList getTestsdateslist(String coursecode,String college_code)
+{
+	String sql = "select test_date,test_date from unit_test_syllabus where college_code='"+college_code+"' and branch='"+coursecode.toUpperCase()+"' order by sno";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+	} catch (Exception e)
+	{
+		log("getTests::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+
+
+public ArrayList getUnittestsubjectsList(String unittestid,String semister)
+{
+	 
+	/*System.out.println("Scheme---------------"+scheme);*/
+	String sql ="select sm.subject_id ||'-'|| subject_name from unit_test_details u left join curriculum_subjects sm on u.subject_id=sm.subject_id where unit_test_no='"+unittestid+"' and sno='"+semister+"'";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+		System.out.println("sql subject_list=="+sql);
+		System.out.println("values==="+values);
+
+	} catch (Exception e)
+	{
+		log("SubjectsList::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+public ArrayList getAllColleges(String universityCode)
+{
+
+	String sql = " select collegename,newcollegecode from college_master " +
+			" where where  flag='f' and university_code=2 ";
+			 
+	log("reportsql:" + sql);
+	ArrayList values = new ArrayList();
+	try
+	{
+
+		values = DatabasePlugin.selectQuery(sql);
+		log("in get colleges=>" + values);
+	} catch (Exception e)
+	{
+		log("getColleges::Error=============>");
+		e.printStackTrace();
+
+	}
+	return values;
+}
+
+
+public static String GetePASSStateUsingMeeseva(String permanent_district,
+		String district) throws SQLException {
+	  
+	String values = DatabasePlugin.getStringfromQuery("select state from meeseeva_districts_mst a inner join pmss_districts_mst dm on(dm.dist_code=a.dist_code) where trim(permanent_district)=trim('"+permanent_district+"') and trim(district)=trim('"+district+"')");
+	return values;
+}
+
+public static String GetePASSDistrictUsingMeeseva(
+		String permanent_district, String district) throws SQLException {
+	 
+	
+	String values = DatabasePlugin.getStringfromQuery("select dm.dist_code from meeseeva_districts_mst a inner join pmss_districts_mst dm on(dm.dist_code=a.dist_code) where trim(permanent_district)=trim('"+permanent_district+"') and trim(district)=trim('"+district+"')");
+	return values;
+	
+	 
+}
+
+
+public ArrayList getNatureofColleges()
+{
+	String sql = "select Upper(nature),id from nature_of_colleges";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+
+	} catch (Exception e)
+	{
+		log("getNatureofColleges::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public ArrayList getCollegesByUniversity(String university)
+{
+	String sql = "select co.college_name,co.college_code from college_course_mapping c inner join tsche_college_master co on co.college_code=c.college_code where university_code='"+university+"'   group by 1,2 order by 1";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+
+	} catch (Exception e)
+	{
+		log("getNatureofColleges::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+
+public ArrayList getCollegesByUniversity1(String university)
+{
+	String sql = "select nature||'---'||co.college_name||', '||coalesce(address,'')||'-'||co.college_code,co.college_code from college_course_mapping c   inner join tsche_college_master co on co.college_code=c.college_code  inner join nature_of_colleges n on co.management=n.id  where case when '"+university+"'='4' then true else    management in (1,2,4,7,3) end  and  university_code='"+university+"'  group by 1,2,nature,college_name order by  nature desc,college_name ";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+
+	} catch (Exception e)
+	{
+		log("getNatureofColleges::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+
+public  ArrayList getGroupsOtherBoards()
+{
+	String sql = "select course_name||'('||course_code||')',course_code from tsche_inter_course_master order by 1,2 ";
+	ArrayList values = new ArrayList();
+	try
+	{
+		values = DatabasePlugin.selectQuery(sql);
+
+	} catch (Exception e)
+	{
+		log("getNatureofColleges::Error=============>");
+		e.printStackTrace();
+	}
+	return values;
+}
+public  String checkfileformat1(FormFile myFile,String fileName,String upload_path,String contextpath,String empid,int maxlength,int minlength) throws Exception
+{
+			commonFunctions cf=new commonFunctions();
+			String path=null;String filepath=null;String dbpath=null;
+			path = contextpath;
+			 boolean falg=false;
+			 int size=myFile.getFileSize();
+				double filesize=size/1024;
+log("filesize::"+filesize+"maxlength"+maxlength);
+				try 
+				{
+				if(fileName != null && !fileName.equals("") &&  (filesize<maxlength)  &&  (filesize>minlength) && cf.fileFormatCheck(myFile, "image/jpeg")) 
+				{
+					String type = myFile.getFileName().substring(
+							myFile.getFileName().lastIndexOf('.'),
+							myFile.getFileName().length());
+					filepath=upload_path;
+					path =path+filepath;
+					
+				   File folder2 = new File(path);
+				   if(!folder2.exists())
+					{
+					   folder2.mkdirs();
+					}
+				    dbpath=empid+type;
+				   fileName=path+dbpath;
+				   dbpath=filepath+dbpath;
+				 
+				if(!fileName.equals(""))
+				{  
+					File fileToCreate = new File(fileName);
+						{
+							FileOutputStream fileOutStream = new FileOutputStream(fileToCreate);
+							fileOutStream.write(myFile.getFileData());
+							fileOutStream.flush();
+							fileOutStream.close();
+						}  
+
+					
+				}
+				}
+				} 
+				catch (Exception e) 
+				{
+					e.printStackTrace();
+					return null;
+				}
+			 return dbpath;
+		 }
+
+public static String getMenteeByCourse(String courseLevel,String college_code) throws Exception {
+	 
+		    StringBuffer data = null;
+		  
+		    /*String sql = "select stu_id,stu_name ||' - '||roll_num||' - '|| case present_yr_study when '1' then 'FirstYear' when '2' then 'Second Year'   when '3' then 'Thirdyear' else '-' end present_yr_study1 " +
+		    		"from student_details where group_id in (select group_id  from group_names where course_slno in (select course_slno from group_names where group_id="+courseLevel+") ) " +
+		    		"and stu_id not in (select student_id from mentor_mentee_mapping) and coll_code in (select collegecode from group_names where group_id="+courseLevel+")  order by present_yr_study desc,stu_name";*/
+		    String sql=" select stu_id,stu_name ||' - '||roll_num||' - '|| case present_yr_study when '1' then 'FirstYear' when '2' then 'Second Year'   when '3' then 'Thirdyear' else '-' end present_yr_study1  "+
+		    		"  from student_details  where present_yr_study::int4 in (1,2,3) "+
+		    		" and  group_id in (select group_id  from group_names where course_slno=split_part('"+courseLevel+"','-',1)::int4 and m_code=split_part('"+courseLevel+"','-',2)::int4 and self_finanaced=split_part('"+courseLevel+"','-',3)::bool )  "+
+		    		" 	and coll_code='"+college_code+"' order by present_yr_study desc,stu_name ";
+		    log("getMenteeByCourse::"+sql);
+		    ArrayList values = new ArrayList();
+		    values=DatabasePlugin.selectQuery(sql);
+		    for (int i=0;i<values.size();i++) {
+		    	if(data==null){
+					data=new StringBuffer();
+					data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+				}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		    }
+		   
+		    return data != null ? data.toString() : null;
+		}
+
+public static String getMenteebyMentor(String courseLevel) throws Exception {
+    StringBuffer data = null;
+  
+    String sql = "select stu_id,stu_name ||' - '||roll_num||' - '|| case present_yr_study when '1' then 'FirstYear' when '2' then 'Second Year'   when '3' then 'Thirdyear' else '-' end present_yr_study1  from student_details sd " +
+    		"inner join mentor_mentee_mapping mm on mm.student_id=stu_id where employee_id='"+courseLevel+"'   order by present_yr_study desc,stu_name";
+    log("getMenteebyMentor::"+sql);
+    ArrayList values = new ArrayList();
+    values=DatabasePlugin.selectQuery(sql);
+    for (int i=0;i<values.size();i++) {
+    	if(data==null){
+			data=new StringBuffer();
+			data.append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+		}else 	data.append("#").append(((ArrayList)values.get(i)).get(0)).append("@").append(((ArrayList)values.get(i)).get(1));
+    }
+   
+    return data != null ? data.toString() : null;
+}
+}

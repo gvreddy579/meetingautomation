@@ -1,0 +1,17 @@
+package cgg.gov.plugin;
+
+public class InitVariables {
+	public static final int scheme_stdate=1997;
+	public static final String contextName="tsrbdworks";
+	//public static final String contextName="wmssw";
+	public static final String filesepartor=System.getProperty("file.separator");
+	public static final String contextPath=System.getProperty("catalina.base")+filesepartor+"webapps"+filesepartor+contextName+filesepartor;
+	public static final String excelFilePath=contextPath+"xlsfiles"+filesepartor;
+	public static final String pdfFilePath=contextPath+"pdffiles"+filesepartor;
+	public static final String mapPath=contextPath+"cityWiseMaps"+filesepartor;
+	public static final String databaseName="postgres";
+	public static final String databaseType="postgres";
+	public static final String filesPath=contextPath+"files"+filesepartor;
+	public static final String mdbPath="helpDesk";
+	
+}

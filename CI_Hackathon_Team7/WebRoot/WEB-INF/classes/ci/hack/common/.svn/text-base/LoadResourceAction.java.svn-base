@@ -1,0 +1,1263 @@
+//Created by MyEclipse Struts
+// XSL source (default): platform:/plugin/com.genuitec.eclipse.cross.easystruts.eclipse_3.8.4/xslt/JavaClass.xsl
+
+package cgg.gov.common;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.actions.DispatchAction;
+import org.apache.struts.util.LabelValueBean;
+//import cgg.gov.Accounts.model.PaymentModel;
+import cgg.gov.plugin.*;
+import meesevaService.*;
+//import antlr.CommonAST;
+import app.common.util.Utilities;
+
+
+/** 
+ * MyEclipse Struts
+ * Creation date: 01-20-2007
+ * 
+ * XDoclet definition:
+ * @struts:action parameter="restype" validate="true"
+ */
+public class LoadResourceAction extends DispatchAction {
+
+	// --------------------------------------------------------- Instance Variables
+
+	// --------------------------------------------------------- Methods
+
+	/** 
+	 * Method execute
+	 * @param mapping
+	 * @param form
+	 * @param request
+	 * @param response
+	 * @return ActionForward
+	 */
+	commonFunctions cf = new commonFunctions();
+	@Override
+	public ActionForward unspecified(ActionMapping mapping,ActionForm form,
+		HttpServletRequest request,	HttpServletResponse response) {
+		//throw new UnsupportedOperationException("Generated method 'execute(...)' not implemented.");
+		response.setContentType("text/xml");
+		PrintWriter out = null;
+		
+		String type = request.getParameter("type");
+        
+		String selectedOption1 = request.getParameter("selectedOption1");
+		String selectedOption2 = request.getParameter("selectedOption2");
+System.out.println("selectedOption130  : "+selectedOption1);
+System.out.println("type  : "+type);
+	//String selectedOption = request.getParameter("selectedOption");
+	String outLine = "",outDATA="";
+	ArrayList data = new ArrayList();
+	//PrintWriter out = response.getWriter();
+	response.setContentType("text/html");
+	try {
+                System.out.println("selectedOption1"+selectedOption1);
+                out = response.getWriter();
+		if (selectedOption1 != null) {
+			
+			String sql = "";
+			  if (type.equals("mandal_code")) {
+				  data =cf.getMandals(selectedOption1); 
+			  }
+			  if (type.equals("perm_mandal_code")) {
+				  data =cf.getMandals(selectedOption1);
+				  
+			  }
+			  else if (type.equals("village_code")) {
+				  data =cf.getVillages(selectedOption1, selectedOption2); 
+			  }	
+			  else if (type.equals("perm_village_code")) {
+				  data =cf.getVillages(selectedOption1, selectedOption2); 
+			  }	
+			  else if (type.equals("course_year")) {
+				  data =cf.getCourseYears();
+				  
+			  }	
+			  else if (type.equals("MLAConstiuency")) {
+				  data =cf.getMLAConstiuency(selectedOption1);
+				  
+			  }
+			  
+			  else if (type.equals("caste")) {
+				  data =cf.getCastes(selectedOption1);
+				  
+			  }
+			  else if (type.equals("bank_ifsc_code")) {
+				  data =cf.getBankBranchNames(selectedOption1,selectedOption2);
+				  
+			  }
+			  else if (type.equals("cert_course_code")) {
+				  data =cf.getcertification_Courses(selectedOption1);
+			  }
+
+			  else if (type.equals("program_id")) {
+				  data =cf.getPrograms(commonFunctions.checkvalue(request.getSession().getAttribute("university_code")),selectedOption1);
+			  }
+
+			  else if (type.equals("tsche_program_id")) {
+				  data =cf.getTschePrograms(commonFunctions.checkvalue(selectedOption1));
+			  }
+			  else if (type.equals("u_course_code")) {
+				  data =cf.getUniversityCoursesList(commonFunctions.checkvalue(request.getSession().getAttribute("university_code")),selectedOption1);
+			  }
+			  else if (type.equals("group_id")) {
+				  data =cf.getCoursesWithGroup_id(selectedOption1,selectedOption2);
+			  }
+			  else if (type.equals("sub_caste")) {
+				  data =commonFunctions.getsubcastes(selectedOption1);
+			  }	  
+			  else if (type.equals("sub_caste_code")) {
+				  data =commonFunctions.getsubcastes(selectedOption1);
+			  }
+			  else if (type.equals("Student_group_id")) {
+				  data =cf.getCoursesWithPresentYear(selectedOption1,selectedOption2);
+			  }
+			  else if (type.equals("subjectid")) {
+				  data =cf.getManatvsubjets(selectedOption1);
+			  }
+			  else if (type.equals("subject_id")) {
+				  data =cf.getSubjectsList(selectedOption1,selectedOption2);
+				  commonFunctions.log("inspect_courses======================");
+				  
+			  }
+			  else if (type.equals("testid")) {
+				  data =cf.getTests(selectedOption1);
+				  commonFunctions.log("testid======================");
+				  
+			  }
+			  else if (type.equals("unittestid")) {
+				  data =cf.getScheduledUnitTests(selectedOption1,selectedOption2);
+				  commonFunctions.log(selectedOption2+"getScheduledUnitTests======================"+selectedOption1);
+				  
+			  }
+			  else if (type.equals("scheduled_subject_id")) {
+				  data =cf.getScheduledUnitTestSubjects(selectedOption1,selectedOption2);
+				  commonFunctions.log("testid======================");
+				  
+			  } else if (type.equals("tsche_college")) {
+				  data =cf.getTscheColleges(selectedOption1);
+				  commonFunctions.log("tsche_course======================");
+				  
+			  } else if (type.equals("tsche_course")) {
+				  data =cf.getTscheCollegeCourses(selectedOption1);
+				  commonFunctions.log("tsche_course======================");
+				  
+			  }
+			  else if (type.equals("group_id1")) {
+				  data =cf.getCoursesWithGroup_id1(selectedOption1,commonFunctions.checkvalue(request.getSession().getAttribute("user_serial_no")));
+				  commonFunctions.log("group_id1======================");
+				  
+			  }
+			  else if (type.equals("college")) {
+				  data =cf.getTscheColleges(selectedOption1);
+				  commonFunctions.log("tsche_course======================");
+				  
+			  }
+			  outDATA=",,,--Select--||";
+			  if (data != null && data.size() > 0) {
+					for (int i = 0; i < data.size(); i++) {
+						outDATA += ((ArrayList) data.get(i)).get(1) + ",,,"
+								+ ((ArrayList) data.get(i)).get(0) + "||";
+					}
+				}
+				if (outDATA.length() > 0)
+					outDATA = outDATA.substring(0, outDATA.length() - 2);
+				
+				 out.print(outDATA);
+				
+			  
+		}
+		else
+		{
+			  
+			
+			out.println("<?xml version=\"1.0\" ?>");
+			out.print("<error>");
+			out.print("Invalid Request");
+			out.print("</error>");
+			 
+		}
+		out.close();
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	public ActionForward mandals(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList mandalsList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select Mandal--";
+			if( Utilities.nullOrBlank(request.getParameter("districtId")))
+				;//selectString="--NO Mandals--";
+			else{
+				
+				mandalsList =cf.getMandals(request.getParameter("districtId"));
+				mandalsList = DatabasePlugin.getLabelValueBeans(mandalsList, true);
+			}
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<mandals>");
+				Iterator iter = mandalsList.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<mandal>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</mandal>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</mandals>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+	
+	public ActionForward districts(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList districtList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select--";
+			if( Utilities.nullOrBlank(request.getParameter("zoneId")))
+				;//selectString="--NO Mandals--";
+			else{
+				commonFunctions cf = new commonFunctions();
+				 districtList =cf.getDistricts(request.getParameter("zoneId"));
+				 districtList = DatabasePlugin.getLabelValueBeans( districtList, true);
+			}
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<districts>");
+				Iterator iter = districtList.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<district>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</district>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</districts>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	
+
+	
+	public ActionForward villages(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			System.out.println("villages List");
+			ArrayList schoolsList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select Village--";
+			if( Utilities.nullOrBlank(request.getParameter("districtId")))
+				;//selectString="--NO Mandals--";
+			else
+			{
+					commonFunctions cf = new commonFunctions();
+			schoolsList =commonFunctions.getVillages(request.getParameter("districtId"),request.getParameter("mandalId"));
+			schoolsList = DatabasePlugin.getLabelValueBeans(schoolsList, true);
+			System.out.println(schoolsList);
+			}
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<villages>");
+				Iterator iter = schoolsList.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<village>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</village>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</villages>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+				
+			}
+			return null;
+		}
+
+	public ActionForward surveyNos(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			System.out.println("survey List");
+			ArrayList schoolsList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select SurveyNo--";
+			if( Utilities.nullOrBlank(request.getParameter("districtId")))
+				;//selectString="--NO Mandals--";
+			else
+			{
+					commonFunctions cf = new commonFunctions();
+			schoolsList =commonFunctions.getSurveys(request.getParameter("districtId"),request.getParameter("mandalId"),request.getParameter("villageId"));
+			schoolsList = DatabasePlugin.getLabelValueBeans(schoolsList, true);
+			System.out.println(schoolsList);
+			}
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<surveys>");
+				Iterator iter = schoolsList.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<survey>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</survey>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</surveys>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+				
+			}
+			return null;
+		}
+	
+
+	public ActionForward users(ActionMapping mapping,ActionForm form,
+				HttpServletRequest request,HttpServletResponse response){
+			System.out.println("usersList");
+			ArrayList usersList=new ArrayList();
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select User--";
+			String logintype=request.getParameter("logintype");
+			System.out.println("logintype :"+logintype);
+			if( Utilities.nullOrBlank(logintype))
+				;
+			else {
+				commonFunctions cf = new commonFunctions();
+				if (logintype.equals("Deo")){
+					usersList =cf.getDistrictUsers();
+			}
+				else if(logintype.equals("Meo")){
+					usersList=cf.getMandalUsers(request.getParameter("districtId"));
+				}
+				else if(logintype.equals("School")){
+					System.out.println("inlogin type Schools"+request.getParameter("districtId")+":mandal:"+request.getParameter("mandalId"));
+					usersList=cf.getSchoolUsers(request.getParameter("districtId"),request.getParameter("mandalId"));
+					
+				}
+				usersList = DatabasePlugin.getLabelValueBeans(usersList, true);
+			}
+			System.out.println("list in users:"+usersList);
+			try{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<users>");
+				Iterator iter = usersList.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<user>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</user>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</users>");
+				out.close();
+				System.out.println("after try in user list");
+			}
+			catch(Exception e){
+				System.out.println("in loadresourse:"+e.getMessage());
+			}
+			return null;
+		}
+
+
+	public ActionForward usersdetails(ActionMapping mapping,ActionForm form,
+				HttpServletRequest request,HttpServletResponse response){
+			String username="";
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			if( Utilities.nullOrBlank(request.getParameter("userId")) )
+				;
+			else
+			{
+					commonFunctions cf = new commonFunctions();
+					username =cf.getUsername(request.getParameter("userId"));
+					System.out.println(username);
+			}
+			try{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				result.append("<user>");
+				result.append("<name>" +username+"</name>");
+				result.append("</user>");
+				
+				System.out.println("ress   "+result);
+				out.print(result);
+				out.close();
+			}
+			catch(Exception e){}
+			return null;
+		}
+
+	
+	public ActionForward courses(ActionMapping mapping,	ActionForm form, HttpServletRequest request,	HttpServletResponse response) 
+	{
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList courselist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			String coursetype = request.getParameter("type");
+			String stream = request.getParameter("stream");
+			System.out.println("--------coursetype--------"+coursetype);
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select --";
+
+			commonFunctions cf = new commonFunctions();
+			courselist =cf.getCourse(coursetype,stream);
+			courselist = DatabasePlugin.getLabelValueBeans(courselist, true);
+			System.out.println(courselist);
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<courses>");
+				Iterator iter = courselist.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					
+					result.append("<course>")
+						  		.append("<name>" + row.getLabel()+"</name>")
+						  		.append("<id>" + row.getValue()+"</id>")
+					      .append("</course>");
+					
+					out.print(result);
+					
+					//System.out.println("result - " + result);
+					
+					result = new StringBuffer("");
+				}
+				out.print("</courses>");
+				//System.out.println(out.toString());
+				out.close();
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+	}
+	//for course cat
+	
+	public ActionForward coursesCategory(ActionMapping mapping,	ActionForm form, HttpServletRequest request,	HttpServletResponse response) 
+	{
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList courseCategorylist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			//String forCombo = request.getParameter("cbo");
+			String coursetype = request.getParameter("type");
+			//String stream = request.getParameter("stream");
+			System.out.println("--------coursetype--------"+coursetype);
+			/*if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";*/
+			String selectString="--Select --";
+
+			commonFunctions cf = new commonFunctions();
+			courseCategorylist =cf.getCourseCategory(coursetype);
+			courseCategorylist = DatabasePlugin.getLabelValueBeans(courseCategorylist, true);
+			System.out.println(courseCategorylist);
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<courseCategorys>");
+				Iterator iter = courseCategorylist.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					
+					result.append("<courseCategory>")
+						  		.append("<name>" + row.getLabel()+"</name>")
+						  		.append("<id>" + row.getValue()+"</id>")
+					      .append("</courseCategory>");
+					
+					out.print(result);
+					
+					//System.out.println("result - " + result);
+					
+					result = new StringBuffer("");
+				}
+				out.print("</courseCategorys>");
+				//System.out.println(out.toString());
+				out.close();
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+	}
+	//for course cat
+	
+	
+	public ActionForward postscats(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList postlist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			HttpSession userses = request.getSession();
+			
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			String teachtype = request.getParameter("type");
+			commonFunctions.log("--------coursetype--123------"+teachtype);
+			
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select --";
+			
+			
+				String collegeCode = userses.getAttribute("user_serial_no")== null ? "0" : userses.getAttribute("user_serial_no").toString(); 
+				postlist =cf.getPostscats(teachtype, collegeCode);
+				postlist = DatabasePlugin.getLabelValueBeans(postlist, true);
+			
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<posts>");
+				Iterator iter = postlist.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<post>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</post>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</posts>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	public ActionForward posts(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList postlist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			HttpSession userses = request.getSession();
+			
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			String teachtype = request.getParameter("type");
+			String source_type = request.getParameter("source_type");
+			System.out.println("--------coursetype--------"+teachtype);
+			
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select --";
+			
+				commonFunctions cf = new commonFunctions();
+				String collegeCode = userses.getAttribute("user_serial_no")== null ? "0" : userses.getAttribute("user_serial_no").toString(); 
+				if(cf.checkvalue(source_type)==null)
+					postlist =cf.getPosts(teachtype);
+				else
+					postlist =cf.getPostsforCollege(teachtype);
+				postlist = DatabasePlugin.getLabelValueBeans(postlist, true);
+			
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<posts>");
+				Iterator iter = postlist.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<post>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</post>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</posts>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	
+	public ActionForward subjects(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList postlist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			HttpSession userses = request.getSession();
+			
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			String desgcode=request.getParameter("postid");
+			String ttype=request.getParameter("tntid");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select --";
+			String collegeCode = userses.getAttribute("userid")== null ? "0" : userses.getAttribute("userid").toString(); 
+				commonFunctions cf = new commonFunctions();
+				postlist =cf.getSubjects(desgcode, collegeCode,ttype);
+				postlist = DatabasePlugin.getLabelValueBeans(postlist, true);
+			
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<subjects>");
+				Iterator iter = postlist.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<subject>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</subject>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</subjects>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	
+	public ActionForward empsubjects(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList postlist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			HttpSession userses = request.getSession();
+			
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			String desgcode=request.getParameter("postid");
+			if (Utilities.nullOrBlank(forCombo)) 
+				forCombo="false";
+			String selectString="--Select --";
+			String collegeCode = userses.getAttribute("user_serial_no")== null ? "0" : userses.getAttribute("user_serial_no").toString(); 
+				commonFunctions cf = new commonFunctions();
+				postlist =cf.getEmpSubjects(desgcode, collegeCode);
+				postlist = DatabasePlugin.getLabelValueBeans(postlist, true);
+			
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<subjects>");
+				Iterator iter = postlist.iterator();
+				while( iter.hasNext() ) 
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<subject>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</subject>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</subjects>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	
+	 
+	public ActionForward coursesList(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+			ArrayList postlist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			String desgcode=request.getParameter("postid");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select --";
+			
+				commonFunctions cf = new commonFunctions();
+				postlist =cf.getCoursesList(desgcode,"");
+				postlist = DatabasePlugin.getLabelValueBeans(postlist, true);
+			
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<courses>");
+				Iterator iter = postlist.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<course>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</course>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</subjects>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	//swathi
+
+	public ActionForward colleges(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+		//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+		ArrayList collegesList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+		response.setContentType("text/xml");
+		PrintWriter out = null;
+		StringBuffer result=new StringBuffer("");
+		String distId = request.getParameter("dist");
+		String selectString="--Select College--";
+		commonFunctions cf = new commonFunctions();
+		collegesList =cf.getColleges(distId);
+		collegesList = DatabasePlugin.getLabelValueBeans(collegesList, true);
+		try
+		{
+			out = response.getWriter();
+			out.println("<?xml version=\"1.0\" ?>");
+			out.print("<colleges>");
+			Iterator iter = collegesList.iterator();
+			while( iter.hasNext() )
+			{
+				LabelValueBean row = (LabelValueBean)iter.next();
+				result.append("<college>")
+				.append("<name>" + row.getLabel()+"</name>")
+				.append("<id>" + row.getValue()+"</id>")
+				.append("</college>");
+				out.print(result);
+				result = new StringBuffer("");
+			}
+			out.print("</colleges>");
+			out.close();
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	public ActionForward zonecolleges(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+		//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+		ArrayList collegesList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+		response.setContentType("text/xml");
+		PrintWriter out = null;
+		StringBuffer result=new StringBuffer("");
+		String zoneId = request.getParameter("zone");
+		String selectString="--Select College--";
+		commonFunctions cf = new commonFunctions();
+		String sql="select collegename,newcollegecode from college_master where districtid in(select district_id::varchar from districts where zoneid='"+zoneId+"') and flag='f'";
+		collegesList =DatabasePlugin.selectQuery(sql);
+		collegesList = DatabasePlugin.getLabelValueBeans(collegesList, true);
+		try
+		{
+			out = response.getWriter();
+			out.println("<?xml version=\"1.0\" ?>");
+			out.print("<colleges>");
+			Iterator iter = collegesList.iterator();
+			while( iter.hasNext() )
+			{
+				LabelValueBean row = (LabelValueBean)iter.next();
+				result.append("<college>")
+				.append("<name>" + row.getLabel()+"</name>")
+				.append("<id>" + row.getValue()+"</id>")
+				.append("</college>");
+				out.print(result);
+				result = new StringBuffer("");
+			}
+			out.print("</colleges>");
+			out.close();
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	public ActionForward emptypes(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+		//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+		ArrayList empList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+		response.setContentType("text/xml");
+		PrintWriter out = null;
+		StringBuffer result=new StringBuffer("");
+		//String typeId = request.getParameter("typeid");
+		String postId = request.getParameter("post");
+		String management = request.getParameter("management");
+		String selectString="--Select College--";
+		commonFunctions cf = new commonFunctions();
+		empList=cf.getempTypes(postId,management);
+		empList = DatabasePlugin.getLabelValueBeans(empList, true);
+		try
+		{
+			out = response.getWriter();
+			out.println("<?xml version=\"1.0\" ?>");
+			out.print("<emptypes>");
+			Iterator iter = empList.iterator();
+			while( iter.hasNext() )
+			{
+				LabelValueBean row = (LabelValueBean)iter.next();
+				result.append("<emptype>")
+				.append("<name>" + row.getLabel()+"</name>")
+				.append("<id>" + row.getValue()+"</id>")
+				.append("</emptype>");
+				out.print(result);
+				result = new StringBuffer("");
+			}
+			out.print("</emptypes>");
+			out.close();
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	
+	
+	
+	public ActionForward rooms(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+		//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+		ArrayList roomsList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+		response.setContentType("text/xml");
+		PrintWriter out = null;
+		StringBuffer result=new StringBuffer("");
+		System.out.println("in get collegess");
+		String selectString="--Select College--";
+		commonFunctions cf = new commonFunctions();
+		roomsList =cf.getRooms();
+		roomsList = DatabasePlugin.getLabelValueBeans(roomsList, true);
+		try
+		{
+			out = response.getWriter();
+			out.println("<?xml version=\"1.0\" ?>");
+			out.print("<rooms>");
+			Iterator iter = roomsList.iterator();
+			while( iter.hasNext() )
+			{
+				LabelValueBean row = (LabelValueBean)iter.next();
+				result.append("<room>")
+				.append("<name>" + row.getLabel()+"</name>")
+				.append("<id>" + row.getValue()+"</id>")
+				.append("</room>");
+				out.print(result);
+				result = new StringBuffer("");
+			}
+			out.print("</rooms>");
+			out.close();
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ActionForward labs(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+		//throw new UnsupportedOperationException( "Generated method 'execute(...)' not implemented.");
+		ArrayList labsList = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+		response.setContentType("text/xml");
+		PrintWriter out = null;
+		StringBuffer result=new StringBuffer("");
+		System.out.println("in get collegess");
+		String selectString="--Select College--";
+		commonFunctions cf = new commonFunctions();
+		labsList =cf.getLabs();
+		labsList = DatabasePlugin.getLabelValueBeans(labsList, true);
+		try
+		{
+			out = response.getWriter();
+			out.println("<?xml version=\"1.0\" ?>");
+			out.print("<labs>");
+			Iterator iter = labsList.iterator();
+			while( iter.hasNext() )
+			{
+				LabelValueBean row = (LabelValueBean)iter.next();
+				result.append("<lab>")
+				.append("<name>" + row.getLabel()+"</name>")
+				.append("<id>" + row.getValue()+"</id>")
+				.append("</lab>");
+				out.print(result);
+				result = new StringBuffer("");
+			}
+			out.print("</labs>");
+			out.close();
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ActionForward searchAjax(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			try{
+			response.setContentType("text/xml");
+			response.setHeader("cache-control","no-cache");
+			String search=request.getParameter("Id");
+			if(!((search.trim()).equals(""))){
+				String sql="select name from employee_details where upper(name) like('"+search+"%') and delete_flag='f'";
+				String searchString=DatabasePlugin.selectQuerySA(sql);
+				//System.out.println("searchString*load*"+searchString+sql);
+				response.getWriter().write(searchString);
+			}else{
+				response.getWriter().write("");
+			}
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			
+			return null;
+		}
+
+	public ActionForward courses1(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			ArrayList courselist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			String coursetype = request.getParameter("type");
+			String stream = request.getParameter("stream");
+			System.out.println("--------coursetype--------"+coursetype);
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select --";
+			
+				commonFunctions cf = new commonFunctions();
+				courselist =cf.getCourse1(coursetype);
+				courselist = DatabasePlugin.getLabelValueBeans(courselist, true);
+			
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>");
+				out.print("<courses>");
+				Iterator iter = courselist.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<course>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</course>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</courses>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	
+	
+	//swathi for course
+	public ActionForward course(ActionMapping mapping,	ActionForm form,
+			HttpServletRequest request,	HttpServletResponse response) {
+			//throw new UnsupportedOperationException( "Generated method 'execute(...)' +not implemented.");
+		
+		commonFunctions.log("-------------------------------------------------coursecoursecoursecoursecourse");  
+			ArrayList postlist = new ArrayList(); //database.getMandals( "15", DB.MANDALS_ALL, false );
+			response.setContentType("text/xml");
+			PrintWriter out = null;
+			StringBuffer result=new StringBuffer("");
+			String forCombo = request.getParameter("cbo");
+			String desgcode=request.getParameter("postid");
+			if (Utilities.nullOrBlank(forCombo))
+				forCombo="false";
+			String selectString="--Select --";
+			
+				commonFunctions cf = new commonFunctions();
+				postlist =cf.getCourse1(desgcode);
+				postlist = DatabasePlugin.getLabelValueBeans(postlist, true);
+			System.out.println("postlist-->"+postlist);
+			try
+			{
+				out = response.getWriter();
+				out.println("<?xml version=\"1.0\" ?>"); 
+				out.print("<courses>");
+				Iterator iter = postlist.iterator();
+				while( iter.hasNext() )
+				{
+					LabelValueBean row = (LabelValueBean)iter.next();
+					result.append("<course>")
+					.append("<name>" + row.getLabel()+"</name>")
+					.append("<id>" + row.getValue()+"</id>")
+					.append("</course>");
+					out.print(result);
+					result = new StringBuffer("");
+				}
+				out.print("</courses>");
+				out.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	public ActionForward getmeesevadetails(ActionMapping mapping,
+            ActionForm form, HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+        try {
+        	//System.out.println("--------------------madhu------------------------");
+            PrintWriter out = response.getWriter();
+          //  GeneralQueries gen = new GeneralQueries();
+            String ac_year = request.getParameter("ac_year");
+            String cert_type, income_no, caste_no, result = "", sql = "", checkresult = "";
+            String retrive_data = "";
+            cert_type = (String) request.getParameter("cert_type");
+            if (cert_type.equals("income")) {
+                sql = "select  coalesce(max(appl_id),'0')  from tsche_meeseeva_entries where meeseeva_no='"
+                        + request.getParameter("income_no")
+                        + "'  and length(appl_id)!='15' and scheme_uniq=0 ";
+            } else if (cert_type.equals("caste")) {
+                sql = "select coalesce(max(appl_id),'0') from tsche_meeseeva_entries where meeseeva_no='"
+                        + request.getParameter("caste_no")
+                        + "' and ac_year='"
+                        + ac_year + "'  and length(appl_id)!='15' and scheme_uniq=0 ";
+            }
+           
+            //System.out.println("SQL ::  "+sql);
+           
+            checkresult = DatabasePlugin.getStringfromQuery(sql);
+
+            if (cert_type.equals("caste") && checkresult.equals("0")) {
+                sql = "select coalesce(max(appl_id),'0') from tsche_meeseeva_entries where meeseeva_no='"
+                        + request.getParameter("caste_no")
+                        + "' and length(appl_id)!='15' ";
+                //System.out.println("SQL :: " + sql);
+                // and
+                // ac_year=split_part('"+ac_year+"','-','1')::int-1||'-'||lpad(split_part('"+ac_year+"','-','2')::int-1,2,'0')
+                String prev_appl_id = DatabasePlugin.getStringfromQuery(sql);
+              
+            }
+
+            if (checkresult.equals("0")) {
+                if (cert_type.equals("income")) {
+
+                    income_no = (String) request.getParameter("income_no");
+                     
+                      retrive_data = MeeseevaData.MeesevaDAta(income_no);
+                    if (retrive_data == null
+                            || retrive_data.equals("")
+                            || retrive_data.length() < 10
+                            || retrive_data
+                                    .equals("Application Number not found")) {
+                        result = "0$Details not Found";
+                    } else if (retrive_data.substring(0, 2).equals("SD")) {
+                        String val[] = retrive_data.split("\\$");
+                        // System.out.println("prasnth here-->" + val[18]);
+                        if (val[18].equals("Income")) {
+                            result = "2$DetailsFound$" + retrive_data;
+                            result += "$"
+                                    + commonFunctions
+                                            .GetePASSStateUsingMeeseva(
+                                                    result.split("\\$")[13],
+                                                    result.split("\\$")[17]);
+                            // System.out.println(result.split("\\$").length+"::"+result);
+                            // 13 permanent_district splitdtls[13] 17 district
+                            // splitdtls[17] 21 state
+                        } else {
+                            result = "0$"
+                                    + income_no
+                                    + " is not income certificate no.please check";
+                        }
+
+                    }
+
+                    else {
+                        String val[] = retrive_data.split("\\$");
+                        result = "1$DetailsFound$" + retrive_data;
+                        result += "$"
+                                + commonFunctions
+                                        .GetePASSStateUsingMeeseva(
+                                                result.split("\\$")[14],
+                                                result.split("\\$")[18]);
+                        // System.out.println(result.split("\\$").length+"::"+result);
+                        // 16 permanent_district splitdtls[14] 20 district
+                        // splitdtls[18] 24 state
+                    }
+                }
+                if (cert_type.equals("caste")) {
+                    caste_no = (String) request.getParameter("caste_no");
+                    retrive_data = MeeseevaData.MeesevaDAta(caste_no);
+                    //System.out.println("retrive_data :: " + retrive_data);
+                    if (retrive_data == null
+                            || retrive_data.equals("")
+                            || retrive_data.length() < 10
+                            || retrive_data
+                                    .equals("Application Number not found")) {
+                        result = "0$Details not Found";
+                    } else if (retrive_data.substring(0, 2).equals("SD")) {
+                        String val[] = retrive_data.split("\\$");
+
+                        if (val[18].equals("Caste")) {
+                            result = "2$DetailsFound$" + retrive_data;
+                            result += "$"
+                                    + commonFunctions
+                                            .GetePASSStateUsingMeeseva(
+                                                    result.split("\\$")[13],
+                                                    result.split("\\$")[17]);
+                            // System.out.println(result.split("\\$").length+"::"+result);
+                        } else {
+                            result = "0$"
+                                    + caste_no
+                                    + " is not caste certificate no.please check";
+                        }
+                    } else {
+                        String val[] = retrive_data.split("\\$");
+                        result = "1$DetailsFound$" + retrive_data;
+                        result += "$"
+                                + commonFunctions
+                                        .GetePASSStateUsingMeeseva(
+                                                result.split("\\$")[14],
+                                                result.split("\\$")[18]);
+                        // System.out.println(result.split("\\$").length+"::"+result);
+                    }
+                } else {
+                    // caste_no = (String) request.getParameter("caste_no");
+                }
+
+            } else {
+                if (checkresult.equals("100")) {
+                    result = "0$ "
+                            + request.getParameter("caste_no")
+                            + " Your Trying to Use Other Student Caste Certificate. Please Enter a valid One. ";
+                } else if (cert_type.equals("income")) {
+                    result = "0$ " + request.getParameter("income_no")
+                            + " Details Already Used  " + checkresult;
+
+                } else if (cert_type.equals("caste")) {
+                    result = "0$ " + request.getParameter("caste_no")
+                            + " Details Already Used  " + checkresult;
+                }
+
+            }
+commonFunctions.log("result::::::"+result);
+            out.print(result);
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+	
+}

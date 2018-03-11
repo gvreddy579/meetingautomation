@@ -1,0 +1,46 @@
+Option Explicit
+'On Error Resume Next
+Dim myRoot, myApp, myEnv, myTransaction, myEnvironment, myDatabase, myAdministrator, myPassword 
+Dim  MetaClassElements,MetaObj,MetaAssociationElements,MetaCollection, lang(3) , shortnamelan(3),MetaAssociationType,MetaAttribute,MetaAttributeGroup,MetaAttributeValue,MetaCommandCategory,MetaCommandGroup
+Dim  MetaClassObj , QueryOptimise, oValue
+Dim objExcel, Sheet, objSheet, row,ChangedItemData, CommandOperators, TotalCount, MyEmail
+Dim i, myConn,myCommand, element, MetaClasses, MetaClass, MetaClassObjects, myDatabases(2), MetaClassObject, ItemsCount, MetaclassCount,OBJECT_NAME_Arr_EN,OBJECT_NAME_Arr_NL, OBJECT_NAME_Arr_FR
+ 
+
+myDatabases(1) = "Prod-Work"
+myDatabases(2) = "Prod-Published"
+CONST PersistLogs = True
+'Syst String
+Const DB_CONNECT_STRING = "provider=oraoledb.oracle;user id=Hackathon_7;password=Hackathon_7;data source=orcLpdb"
+MsgBox "Test"
+ 
+	Set myConn = CreateObject("ADODB.Connection")
+	Set myCommand = CreateObject("ADODB.Command" )
+	myConn.Open DB_CONNECT_STRING
+	Set myCommand.ActiveConnection = myConn
+	myConn.BeginTrans 
+	myConn.CommitTrans
+	myConn.Close
+	 
+	'SendMailToUsers TotalCount, myDatabase
+	 
+	 
+	'dispatch transaction 
+ MsgBox "Test"
+ 
+
+Sub SendMailToUsers(TotalRecordsCount, RepositoryName)
+	Set MyEmail=CreateObject("CDO.Message")
+	MyEmail.Subject=   "Prod : Mega History Dumping - "&RepositoryName
+	MyEmail.From= "mega.colruyt@colruyt.be"
+ 	MyEmail.To= "rajasekharareddy.gowkanapalli@colruytgroup.com;raghu.noolu@colruytgroup.com;venkataramanasashidhar.vasamsetty@colruytgroup.com"
+	MyEmail.TextBody = "Total number of history records dumped/deleted - "&TotalRecordsCount
+	MyEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/sendusing")=2
+	'SMTP Server
+	MyEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/smtpserver")="smtp.colruyt.int"
+	'SMTP Port
+	MyEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/smtpserverport")=25 
+	MyEmail.Configuration.Fields.Update
+	MyEmail.Send
+	Set MyEmail=nothing
+End Sub

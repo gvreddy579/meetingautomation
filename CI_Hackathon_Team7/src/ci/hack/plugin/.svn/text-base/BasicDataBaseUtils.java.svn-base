@@ -1,0 +1,1118 @@
+package cgg.gov.plugin;
+
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.apache.struts.util.LabelValueBean;
+/**
+ * @author Abdulla P
+ */
+
+public class BasicDataBaseUtils 
+{
+
+	public static ArrayList returnArrayList(String query,Connection con,String addSerialNo)
+	{
+		//System.out.println("query  payslip 123 method other " 
+		ArrayList reportData=new ArrayList();
+		ArrayList reportSubList=null;
+		Statement st=null;
+		ResultSet rs=null;
+		int rowCount=0,serialNo=1;
+		try
+		{
+			//System.out.println("query="+query);
+			st=con.createStatement();
+			//System.out.println("query="+query);
+			rs=st.executeQuery(query);
+			while (rs!=null && rs.next())
+			{
+				reportSubList=new ArrayList();
+				if (addSerialNo.equalsIgnoreCase("yes"))
+				{
+					reportSubList.add(Integer.toString(serialNo));
+				}
+				for (rowCount=1;rowCount<=rs.getMetaData().getColumnCount();rowCount++)
+				{
+					if (rs.getString(rowCount)==null)
+						reportSubList.add("");
+					else
+						reportSubList.add(rs.getString(rowCount));
+				}
+				reportData.add(reportSubList);
+				serialNo++;
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				st.close();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		return reportData;
+	}
+	public static ArrayList<HashMap<String, Object>> getListMapData(ResultSet rs,String addSerialNo)
+	{
+		ArrayList<HashMap<String, Object>> reportData = new ArrayList<HashMap<String, Object>>();
+		ResultSetMetaData rm = null;
+		HashMap<String, Object> rowData = null;
+		int noOfCols = 0,serialNo=1;
+		try{
+			rm = rs.getMetaData();
+			noOfCols = rm.getColumnCount();
+			if(rs!=null && rs.next())
+			{
+				do {
+					rowData = new HashMap<String, Object>(noOfCols);
+					if (addSerialNo.equalsIgnoreCase("yes"))
+					{
+						rowData.put("serial",Integer.toString(serialNo));
+					}
+					for(int i=1;i<=noOfCols;i++)
+					{
+						rowData.put(rm.getColumnName(i).toLowerCase(), ((rs.getObject(i)!=null && !rs.getObject(i).equals(""))?rs.getObject(i):""));
+					} 
+					reportData.add(rowData);
+					serialNo++;
+				} while(rs.next());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+			} catch (SQLException se) {
+				se.printStackTrace();
+			}
+		}
+
+		return reportData;
+	}
+
+	public static ArrayList<HashMap<String, Object>> getListMapData(String sql,Connection con)
+	{
+		ArrayList<HashMap<String, Object>> reportData = new ArrayList<HashMap<String, Object>>();
+		ResultSetMetaData rm = null;
+		HashMap<String, Object> rowData = null;
+		int noOfCols = 0;
+		ResultSet rs=null;
+		Statement st=null;
+		try
+		{
+			st=con.createStatement();
+			rs=st.executeQuery(sql);
+			rm = rs.getMetaData();
+			noOfCols = rm.getColumnCount();
+			if(rs!=null && rs.next())
+			{
+				do {
+					rowData = new HashMap<String, Object>(noOfCols);
+					for(int i=1;i<=noOfCols;i++)
+					{
+						rowData.put(rm.getColumnName(i).toLowerCase(), ((rs.getObject(i)!=null && !rs.getObject(i).equals(""))?rs.getObject(i):""));
+					} 
+					reportData.add(rowData);
+				} while(rs.next());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+			} catch (SQLException se) {
+				se.printStackTrace();
+			}
+		}
+
+		return reportData;
+	}
+	public static ArrayList<HashMap<String, Object>> getListMapDataWithTotals(ResultSet rs)
+	{
+		ArrayList<HashMap<String, Object>> reportData = new ArrayList<HashMap<String, Object>>();
+		ResultSetMetaData rm = null;
+		HashMap<String, Object> rowData = null;
+		int noOfCols = 0;
+		int k=0;
+		long totalShgs=0,bankNotEntered=0,branchNotEntered=0,accountNotEntered=0;
+		try{
+			rm = rs.getMetaData();
+			noOfCols = rm.getColumnCount();
+			if(rs!=null && rs.next())
+			{
+				do {
+					rowData = new HashMap<String, Object>(noOfCols);
+					rowData.put("slno",++k);
+					for(int i=1;i<=noOfCols;i++)
+					{
+						rowData.put(rm.getColumnName(i).toLowerCase(), ((rs.getObject(i)!=null && !rs.getObject(i).equals(""))?rs.getObject(i):""));
+						if(i==2){
+							totalShgs=totalShgs+rs.getLong(i);
+						}
+						if(i==3){
+							bankNotEntered=bankNotEntered+rs.getLong(i);
+						}
+						if(i==4){
+							branchNotEntered=branchNotEntered+rs.getLong(i);
+						}
+						if(i==5){
+							accountNotEntered=accountNotEntered+rs.getLong(i);
+						}
+					} 
+					reportData.add(rowData);
+				} while(rs.next());
+			}
+			if(reportData.size()>0){
+				rowData = new HashMap<String, Object>(noOfCols);
+				rowData.put("slno","");
+				rowData.put("slumname", "Total");
+				rowData.put("count_no", totalShgs);
+				rowData.put("noof_bank_null", bankNotEntered);
+				rowData.put("noof_branches_null", branchNotEntered);
+				rowData.put("noof_accno_null", accountNotEntered);
+				reportData.add(rowData);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+			} catch (SQLException se) {
+				se.printStackTrace();
+			}
+		}
+
+		return reportData;
+	}
+	public static ArrayList getStateList() {
+		ArrayList months=new ArrayList();
+		months.add(new LabelValueBean("Andhra Pradesh","28"));
+		return months;
+	}
+	public static ArrayList getInstallmentList() {
+		ArrayList months=new ArrayList();
+		months.add(new LabelValueBean("Installment-1","1"));
+		months.add(new LabelValueBean("Installment-2","2"));
+		
+		return months;
+	}
+	
+	public static String autoGenColumn(Connection con,String tableName,String field,String condition) throws SQLException
+	{ 
+		Statement st=null;
+		ResultSet rs=null;
+		int genCode=0;
+		String sql="select max(to_number("+ field +")) from "+ tableName+" "+condition+" " ;
+		//System.out.println("sql="+sql);
+		try
+		{ 
+			st=con.createStatement();
+			rs=st.executeQuery(sql);
+			if (rs!=null && rs.next())
+			{	
+				if (rs.getString(1)==null)
+					genCode=1;
+				else 
+					genCode= rs.getInt(1)+1;
+			} else	 
+				genCode=1;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			if(rs != null)
+				rs.close();
+			if(st != null)
+				st.close();
+		}
+		return Integer.toString(genCode);	
+	}
+	public static void setUserLoginInfo(String userSerialNo,Connection con)
+	{
+		String sql="SELECT USER_SERIAL_NO FROM USER_AUDIT_LOG WHERE USER_SERIAL_NO='"+userSerialNo+"'";
+		String userStatus=DatabasePlugin.getStringfromQuery(sql);
+		if(userStatus!=null && !userStatus.equals(""))
+			sql="UPDATE USER_AUDIT_LOG SET LOG_IN=now(),USER_TRN=1 WHERE USER_SERIAL_NO='"+userSerialNo+"'";
+		else
+			sql="INSERT INTO USER_AUDIT_LOG(USER_SERIAL_NO, LOG_IN,USER_TRN) VALUES('"+userSerialNo+"', now(),1)";
+		DatabasePlugin.executeUpdate(sql);
+		
+	}
+	public static void setLogInTrnInfo(String remoteAdd, String userSerialNo,Connection con)
+	{
+		String sql="INSERT INTO LOGIN_TRN_INFO(TRANSACTION_ID, LOGIN_TIME, SYSTEM_IP, USER_SERIAL_NO) " +
+				"VALUES("+BasicDataBaseUtils.getSequenceByDB("TRANSACTION_ID", con)+",NOW(), '"+remoteAdd+"', "+userSerialNo+")";
+		//System.out.println("SQL ofsetLogInTrnInfo :"+sql);
+		DatabasePlugin.executeUpdate(sql);
+	}
+	public static String getSystemDateByDB()
+	{
+
+		String dbType=null,sql=null;
+		try
+		{
+			dbType=InitVariables.databaseType;
+			if(dbType!=null && dbType.equals("oracle"))
+				sql="SYSDATE";
+			else
+				sql="NOW()";
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+		}
+		return sql;
+	}
+	public static void setUserLogoutInfo(String userSerialNo,Connection con)
+	{
+		String sql="update USER_AUDIT_LOG set LOG_OUT=now(),USER_TRN=2 where USER_SERIAL_NO="+userSerialNo+"";
+		//System.out.println("sql="+sql);
+		DatabasePlugin.executeUpdate(sql);
+	}
+	public static void setLogoutTrnInfo(String userSerialNo,Connection con)
+	{
+		String sql="update LOGIN_TRN_INFO set LOGOUT_TIME=now() where USER_SERIAL_NO="+userSerialNo+" AND TRANSACTION_ID=(SELECT MAX(TRANSACTION_ID) FROM LOGIN_TRN_INFO WHERE USER_SERIAL_NO=LOGIN_TRN_INFO.USER_SERIAL_NO) ";
+		//System.out.println("sql="+sql);
+		DatabasePlugin.executeUpdate(sql);
+	}
+
+	public static String getQuarterLable(String month) {
+		String quarterLable="";
+		if(month!=null && month.equals("1"))
+			quarterLable="Quarter 1-(January-March)";
+		else if(month!=null && month.equals("2"))
+			quarterLable="Quarter 2-(April-June)";
+		else if(month!=null && month.equals("3"))
+			quarterLable="Quarter 3-(July-September)";
+		else if(month!=null && month.equals("4"))
+			quarterLable="Quarter 4-(October-December)";
+		return quarterLable;
+	}
+	public static String getCurrentQuarter(String month) {
+		String curQuarter="";
+		if(month!=null && (month.equals("1") || month.equals("2") || month.equals("3")))
+			curQuarter="1";
+		else if(month!=null && (month.equals("4") || month.equals("5") || month.equals("6")))
+			curQuarter="2";
+		else if(month!=null && (month.equals("7") || month.equals("8") || month.equals("9")))
+			curQuarter="3";
+		else if(month!=null && (month.equals("10") || month.equals("11") || month.equals("12")))
+			curQuarter="4";
+		return curQuarter;
+	}
+	public static String getQuarter(int curMonth) {
+		String quarterLable="";
+		String month=Integer.toString(curMonth);
+		if(month!=null && month.equals("1"))
+			quarterLable="Quarter 1-(January-March)";
+		else if(month!=null && month.equals("2"))
+			quarterLable="Quarter 2-(April-June)";
+		else if(month!=null && month.equals("3"))
+			quarterLable="Quarter 3-(July-September)";
+		else if(month!=null && month.equals("4"))
+			quarterLable="Quarter 4-(October-December)";
+		return quarterLable;
+	}
+	
+	public static ArrayList<HashMap<String, Object>> getMapList(String sql, Connection con)
+	{
+		ArrayList<HashMap<String, Object>> reportData = null;
+    	 Statement stmt = null;
+    	 ResultSet rs = null;
+    	 try {
+             stmt = con.createStatement();
+             rs = stmt.executeQuery(sql);
+             reportData = getMapList(rs);
+    	}catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+				if(stmt!=null) {
+					stmt.close();
+				}
+			} catch (SQLException e) {
+				
+				e.printStackTrace();
+			}
+		}
+		return reportData;
+	}
+     
+	public static ArrayList<HashMap<String, Object>> getMapList(ResultSet rs)
+	{
+		ArrayList<HashMap<String, Object>> reportData = null;
+		ResultSetMetaData rm = null;
+		HashMap<String, Object> rowData = null;
+		int noOfCols = 0;
+		try{
+			rm = rs.getMetaData();
+			noOfCols = rm.getColumnCount();
+			if(rs.next())
+			{
+				reportData = new ArrayList<HashMap<String, Object>>();
+				do {
+					rowData = new HashMap<String, Object>(noOfCols);
+					for(int i=1;i<=noOfCols;i++)
+					{
+						rowData.put(rm.getColumnName(i).toLowerCase(), ((rs.getObject(i)!=null && !rs.getObject(i).equals(""))?rs.getObject(i):""));
+					} 
+					reportData.add(rowData);
+				} while(rs.next());
+			}
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+			} catch (SQLException se) {
+				
+				se.printStackTrace();
+			}
+		}
+		
+		return reportData;
+	}
+	
+	public static HashMap<String, Object> getMap(String sql, Connection con)
+	{
+		HashMap<String, Object> reportData = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		try {
+			stmt = con.createStatement();
+			rs = stmt.executeQuery(sql);
+			reportData = getMap(rs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null) {
+					rs.close();
+				}
+				if (stmt != null) {
+					stmt.close();
+				}
+			} catch (SQLException e) {
+				
+				e.printStackTrace();
+			}
+		}
+		return reportData;
+	}
+     
+	public static HashMap<String, Object> getMap(ResultSet rs)
+	{
+		ResultSetMetaData rm = null;
+		HashMap<String, Object> reportData = null;
+		int noOfCols = 0;
+		try{
+			rm = rs.getMetaData();
+			noOfCols = rm.getColumnCount();
+			if(rs.next())
+			{
+				reportData = new HashMap<String, Object>(noOfCols);
+				for(int i=1;i<=noOfCols;i++)
+				{
+					reportData.put(rm.getColumnName(i).toLowerCase(), ((rs.getObject(i)!=null && !rs.getObject(i).equals(""))?rs.getObject(i):""));
+				} 
+			}
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs!=null) {
+					rs.close();
+				}
+			} catch (SQLException se) {
+				
+				se.printStackTrace();
+			}
+		}
+		
+		return reportData;
+	}
+	public static ArrayList getyearList(Connection con){
+		sql="SELECT ID,YEAR FROM FINANCIALYEARS ORDER BY ID";
+		return DatabasePlugin.getSelectBox(sql);
+	}
+	public static ArrayList<LabelValueBean> getyearList(int fromYear,int toYear, boolean isFinancialYear) throws Exception
+	{
+		ArrayList<LabelValueBean> yearList = new ArrayList<LabelValueBean>();
+		for(;fromYear<=toYear;fromYear++)
+		{
+			if(isFinancialYear) {
+				yearList.add(new LabelValueBean(fromYear+"-"+(fromYear+1), Integer.toString(fromYear)));
+			} else {
+				yearList.add(new LabelValueBean(Integer.toString(fromYear),Integer.toString(fromYear)));
+			}
+		}
+		return yearList;
+	}
+	public static ArrayList<LabelValueBean> getQuarterList() throws Exception
+	{
+		ArrayList<LabelValueBean> quarterList = new ArrayList<LabelValueBean>();
+		quarterList.add(new LabelValueBean("Quarter 1","1"));
+		quarterList.add(new LabelValueBean("Quarter 2","2"));
+		quarterList.add(new LabelValueBean("Quarter 3","3"));
+		quarterList.add(new LabelValueBean("Quarter 4","4"));
+		return quarterList;
+	}
+	
+	public static int getIntValue(String value) throws Exception 
+	{	
+		int valueInt = 0;
+		if(value!=null && !value.equals(""))
+		{
+			valueInt = Integer.parseInt(value);
+		}
+		return valueInt;
+	}
+	public static float getFloatValue(String value) throws Exception 
+	{	
+		float valueFloat = 0;
+		if(value!=null && !value.equals(""))
+		{
+			valueFloat = Float.parseFloat(value);
+		}
+		return valueFloat;
+	}
+	
+	public static ArrayList getDistrictList(String stateId,Connection con){
+		sql="SELECT DISTRICT_ID,DISTRICT_NAME FROM DISTRICT_MST WHERE STATE_ID='"+stateId+"' AND DISTRICT_ID<>'0' ORDER BY DISTRICT_NAME";
+		//System.out.println("district List "+sql);
+		return DatabasePlugin.getSelectBox(sql);
+	}
+	
+	public static ArrayList getCityList(String stateId,String districtId,Connection con){
+		sql="select city_id, city_name from city_mst where state_id='"+stateId+"' and district_id="+districtId+" and city_id<>0 order by city_name";
+		//System.out.println("district List "+sql);
+		return DatabasePlugin.getSelectBox(sql);
+	}
+	public static ArrayList getDistricts(String stateId, Connection con) throws SQLException
+	{
+		String sql = "select district_id, district_name from district_mst where state_id="+stateId+" and district_id<>0" ;
+        return returnArrayList(sql, con, "no");
+	}
+	
+	public static ArrayList<LabelValueBean> getStateList(Connection con) throws SQLException
+	{
+		String sql = "select state_id, state_name from state_mst where state_id<>0 order by state_name"; 
+		return DatabasePlugin.getSelectBox(sql);
+	}
+	
+	public static ArrayList<LabelValueBean> getBranchList(String bank_id, Connection con) throws SQLException
+	{
+		String sql = "select branch_id, branch_name from branch_mst where bank_id="+bank_id+" order by branch_name"; 
+			            
+        return DatabasePlugin.getSelectBox(sql);
+	}
+	public static ArrayList<LabelValueBean> getBankList(Connection con) throws SQLException
+	{
+		String sql = "select bank_id,INITCAP(LOWER(bank_name)) as bank_name  from wms_bank_mst where delete_flag is not null order by bank_name"; 
+			            
+        return DatabasePlugin.getSelectBox(sql);
+	}
+	public static ArrayList<LabelValueBean> getActivityList(Connection con) throws SQLException
+	{
+		String sql = "select activity_id, activity_name from activity_mst order by activity_name"; 
+			            
+        return DatabasePlugin.getSelectBox(sql);
+	}
+	public static ArrayList<LabelValueBean> getCategoryList(Connection con) throws SQLException
+	{
+		String sql = "select category_id, category_name from category_mst order by category_name"; 
+			            
+        return DatabasePlugin.getSelectBox(sql);
+	}
+	public static ArrayList<LabelValueBean> getQuarterMonthList(int quarterId) throws Exception
+	{
+		ArrayList<LabelValueBean> quarterMonthList = new ArrayList<LabelValueBean>();
+		switch (quarterId) {
+		case 1:
+		{
+			quarterMonthList.add(new LabelValueBean("April","4"));
+			quarterMonthList.add(new LabelValueBean("May","5"));
+			quarterMonthList.add(new LabelValueBean("June","6"));	
+		}
+		break;
+		case 2:
+		{
+			quarterMonthList.add(new LabelValueBean("July","7"));
+			quarterMonthList.add(new LabelValueBean("August","8"));
+			quarterMonthList.add(new LabelValueBean("September","9"));
+		}
+		break;
+		case 3:
+		{
+			quarterMonthList.add(new LabelValueBean("October","10"));
+			quarterMonthList.add(new LabelValueBean("November","11"));
+			quarterMonthList.add(new LabelValueBean("December","12"));
+		}
+		break;
+		case 4:
+		{
+			quarterMonthList.add(new LabelValueBean("January","1"));
+			quarterMonthList.add(new LabelValueBean("February","2"));
+			quarterMonthList.add(new LabelValueBean("March","3"));
+		}
+		break;
+		default:
+			break;
+		}
+		return quarterMonthList;
+	}
+	
+	
+	
+	
+	public static String indianCurrencyFormat(double value) throws SQLException
+	{
+		 DecimalFormat formatter = new DecimalFormat("0.00");
+	        String formattedValue = formatter.format(value);
+	        String integral = formattedValue.replaceAll("\\D\\d++", "");
+	        String fraction = formattedValue.replaceAll("\\d++\\D", "");
+	        if(integral.length() <= 3) return formattedValue;
+	        char lastDigitOfIntegral = integral.charAt(integral.length()-1);
+	        integral = integral.replaceAll("\\d$", "");
+	        return integral.replaceAll("(?<=.)(?=(?:\\d{2})+$)", ",")+
+	                lastDigitOfIntegral+"."+fraction;
+	}
+	static String sql = "";
+
+	public  static String getNameByID(String sql,Connection con)
+	{
+		Statement st=null;
+		ResultSet rs = null;
+		String stateName=null;
+
+		try{
+			st=con.createStatement();
+			//System.out.println("getNameByID= "+sql);
+			rs=st.executeQuery(sql);
+			while(rs!=null && rs.next())
+			{	
+				stateName = rs.getString(1);	
+
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+
+		}
+		return stateName ;
+	}	
+	public static ArrayList getDistrictMasterList(String stateId,Connection con){
+		sql="SELECT DISTRICT_ID,DISTRICT_NAME FROM DISTRICT_MST WHERE STATE_ID='"+stateId+"' AND district_id<>0 ORDER BY DISTRICT_NAME";
+		//System.out.println("district List "+sql);
+		return DatabasePlugin.getSelectBox(sql);
+	}
+	
+	
+	
+	public static String autoGenColumn(String tableName,String field,Connection con) throws SQLException
+	{ 
+		String code="",upcode="";	
+		Statement stmt=null;
+		ResultSet rs=null;
+		int gencode=0;
+
+		//String sql="select max(to_number("+ field +")) from "+ tableName ;
+		String sql="select max("+ field +") from "+ tableName ;
+		try{ 
+			stmt=con.createStatement();
+			rs=stmt.executeQuery(sql);
+			if (rs!=null && rs.next())
+			{	
+				code= rs.getString(1);
+				if (code==null)
+					gencode=Integer.parseInt("1");
+				else {
+					gencode= Integer.parseInt(code);
+					gencode++;
+				}
+			} else	 {
+				gencode=1;
+			}
+			upcode=Integer.toString(gencode);	    
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		finally{
+			if(rs != null)
+				rs.close();
+			if(stmt != null)
+				stmt.close();
+		}
+		return upcode;
+	}	
+	public static String getMaxNumber(String tableName,String field,String whereCondition,Connection con) throws SQLException
+	{ 
+		String code="",upcode="";	
+		Statement stmt=null;
+		ResultSet rs=null;
+		int gencode=0;
+
+		String sql="select max("+ field +") from "+ tableName +" "+whereCondition+" ";
+		try{ 
+			stmt=con.createStatement();
+			//System.out.println("sql="+sql);
+			rs=stmt.executeQuery(sql);
+			if (rs!=null && rs.next())
+			{	
+				code= rs.getString(1);
+				if (code==null)
+					gencode=Integer.parseInt("1");
+				else {
+					//System.out.println("code="+code);
+					gencode= Integer.parseInt(code);
+					gencode++;
+					//System.out.println("gencode="+gencode);
+				}
+			} else	 {
+				gencode=1;
+			}
+			upcode=Integer.toString(gencode);	    
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		finally{
+			if(rs != null)
+				rs.close();
+			if(stmt != null)
+				stmt.close();
+		}
+		
+		//System.out.println("upcode="+upcode);
+		
+		return upcode;
+	}	
+	
+	public static ArrayList returnSingleArrayList(String query,Connection con)
+	{
+		ArrayList  reportData=new ArrayList ();
+
+		Statement st=null;
+		ResultSet rs=null;
+		int rowCount=0;
+		try
+		{
+			st=con.createStatement();
+			rs=st.executeQuery(query);
+			while (rs!=null && rs.next())
+			{
+				for (rowCount=1;rowCount<=rs.getMetaData().getColumnCount();rowCount++)
+				{
+					if (rs.getString(rowCount)==null)
+						reportData.add("0");
+					else
+						reportData.add(rs.getString(rowCount).trim());
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				st.close();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		return reportData;
+	}
+	public  static String getAttributeName(String sql,Connection con)
+	{
+		
+		//System.out.println("sql="+sql);
+		Statement st=null;
+		ResultSet rs = null;
+		String attributeName=null;
+
+		try{
+			st=con.createStatement();
+			//System.out.println("sql="+sql);
+			rs=st.executeQuery(sql);
+			if(rs!=null && rs.next())
+			{	
+				attributeName = rs.getString(1);	
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+
+		}
+		return attributeName ;
+	}
+
+	public static String getSequenceByDB(String sequenceName,Connection con)
+	{
+
+		String sequenceValue=null,dbType=null,sql=null;
+		try
+		{
+			dbType=InitVariables.databaseType;
+			if(dbType!=null && dbType.equals("oracle"))
+				sql="SELECT "+sequenceName+".NEXTVAL FROM DUAL";
+			else
+				sql="SELECT NEXTVAL('"+sequenceName+"')";
+			//System.out.println("sql="+sql);
+			sequenceValue=BasicDataBaseUtils.getAttributeName(sql, con);
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+		}
+		return sequenceValue;
+	}
+	
+	public static ArrayList getOptionsList(String sql,Connection con,int noOfParameters)
+	{
+		//System.out.println("sql "+sql);
+		ArrayList<LabelValueBean> reportData=new ArrayList<LabelValueBean>();
+		ResultSet rs=null;
+		Statement st=null;
+		try
+		{
+			st=con.createStatement();
+			System.out.println("getOptionsList sql="+sql);
+
+			rs=st.executeQuery(sql);
+						while(rs!=null && rs.next())
+			{				
+				if (noOfParameters==3)
+					reportData.add(new LabelValueBean(rs.getString(2)+" -- "+rs.getString(3)+" -- "+rs.getString(4),rs.getString(1)));
+				else if (noOfParameters==1)
+					reportData.add(new LabelValueBean(rs.getString(1)+"-"+rs.getString(2),rs.getString(3)));
+				else
+					reportData.add(new LabelValueBean(rs.getString(2),rs.getString(1)));
+			}	
+		}
+		
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				st.close();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		return reportData;	
+	}
+
+	public static String autoGenColumn1(String sql,Connection con) throws SQLException
+	{ 
+		String code="";	
+		Statement stmt=null;
+		ResultSet rs=null;
+		String gencode="";
+		try{ 
+			stmt=con.createStatement();
+			rs=stmt.executeQuery(sql);
+			if (rs!=null && rs.next())
+			{	
+				code= rs.getString(1);
+				if (code==null)
+					gencode="1";
+				else 
+				{
+					gencode=Integer.toString(Integer.parseInt(code)+1);
+				}
+			} else	 
+			{
+				gencode="1";
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		finally{
+			if(rs != null)
+				rs.close();
+			if(stmt != null)
+				stmt.close();
+		}
+		return gencode;
+	}
+
+	public static boolean recordExists(Connection con,String query)
+	{
+		//System.out.println("query "+query);
+		boolean flag=false;
+		ResultSet rs=null;
+		Statement st=null;
+		try
+		{
+			st=con.createStatement();
+			rs=st.executeQuery(query);
+			if (rs!=null && rs.next())
+			{
+				if (rs.getString(1)==null || rs.getString(1).equals("") || rs.getString(1).equals("0"))
+					flag=false;
+				else
+					flag=true;
+			}
+			else
+				flag=false;
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				rs.close();
+				st.close();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		return flag;
+	}
+
+	public static int recordExists(String tableName, String whereCondition,Connection con)
+	{
+		int rowCount=0;
+		Statement st=null;
+		ResultSet rs=null;
+		try
+		{
+			st=con.createStatement();
+			String sql="SELECT COUNT(*) FROM "+tableName+" "+whereCondition+" ";
+			//System.out.println("sql="+sql);
+			rs=st.executeQuery(sql);
+			if (rs!=null && rs.next())
+			{
+				if (rs.getInt(1)==0)
+					rowCount=0;
+				else
+					rowCount=rs.getInt(1);
+			}
+			else
+				rowCount=0;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				st.close();
+				rs.close();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		return rowCount;
+	}
+	
+	public static String getStateNameById(String stateId,Connection con)
+	{
+		String sql=" SELECT STATE_NAME FROM STATE_MST WHERE STATE_ID='"+stateId+"'";
+		return DatabasePlugin.getStringfromQuery(sql);
+
+	}
+	public static String getCityNameById(String cityId,Connection con)
+	{
+		String sql=" SELECT CITY_NAME FROM CITY_MST WHERE CITY_ID='"+cityId+"'";
+		return DatabasePlugin.getStringfromQuery(sql);
+
+	}
+	public static boolean recordExists1(String tableName, String whereCondition,Connection con)
+	{
+		boolean flag=false;
+		Statement st=null;
+		ResultSet rs=null;
+		try
+		{
+			st=con.createStatement();
+			String sql="select count(*) from "+tableName+" "+whereCondition+" ";
+			//System.out.println("sql="+sql);
+			rs=st.executeQuery(sql);
+			if (rs!=null && rs.next())
+			{
+				if (rs.getString(1).equals("0"))
+					flag=false;
+				else
+					flag=true;
+			}
+			else
+				flag=false;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			flag=false;
+		}
+		finally
+		{
+			try
+			{
+				st.close();
+				rs.close();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		return flag;
+	}
+	public static boolean AdminAuthorityRecordExists(Connection con,String technicalAuthorityName,Statement st)
+	{
+		boolean flag=false;
+		ResultSet rs=null;
+		try
+		{
+			String query="select count(*) from wms_admin_authority_mst where trim(lower(authority_name))=trim('"+technicalAuthorityName.toLowerCase()+"')";
+			rs=st.executeQuery(query);
+			if (rs!=null && rs.next())
+			{
+				if (rs.getString(1).equals("0"))
+					flag=false;
+				else
+					flag=true;
+			}
+			else
+				flag=false;
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	public static boolean TechnicalAuthorityRecordExists(String technicalAuthorityName,Statement st)
+	{
+		boolean flag=false;
+		ResultSet rs=null;
+		try
+		{
+			String query="select count(*) from wms_technical_authority_mst where trim(lower(authority_name))=trim('"+technicalAuthorityName.toLowerCase()+"')";
+			rs=st.executeQuery(query);
+			if (rs!=null && rs.next())
+			{
+				if (rs.getString(1).equals("0"))
+					flag=false;
+				else
+					flag=true;
+			}
+			else
+				flag=false;
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return flag;
+	}
+
+
+	public static ArrayList getComponentList(Connection con)
+	{
+		String sql="SELECT work_type_id,work_type_desc FROM wms_works_type_mst WHERE delete_flag='F' ORDER BY work_type_id";
+			//System.out.println("WORKliST "+sql);
+		return DatabasePlugin.getSelectBox(sql);
+	}
+	public static ArrayList getSubComponentList(String componenetId,Connection con)
+	{
+		String sql="select work_nature_id,work_nature_type_desc from wms_works_nature_mst where parent_id="+componenetId+" and delete_flag='F' order by work_nature_id";
+		//System.out.println("WORKliST "+sql);
+		return DatabasePlugin.getSelectBox(sql);
+	}
+	public static String getComponentNameById(String componentId,Connection con)
+	{
+		String sql="select COMPONENT_NAME FROM WMS_COMPONENT_MST WHERE COMPONENT_ID="+componentId;
+		//	System.out.println("WORKliST "+sql);
+		return DatabasePlugin.getStringfromQuery(sql);
+	}
+	public static String getSubComponentNameById(String componentId,String subCompId,Connection con)
+	{
+		String sql="select SUB_COMPONENT_NAME FROM WMS_SUB_COMPONENT_MST WHERE SUB_COMPONENT_ID="+subCompId+" AND COMPONENT_ID="+componentId;
+		//	System.out.println("WORKliST "+sql);
+		return DatabasePlugin.getStringfromQuery(sql);
+	}
+	public static ArrayList getUnitsList(Connection con)
+	{
+		String sql="select UNITID, UNITNAME from WMS_UNITMASTER";
+		return DatabasePlugin.getSelectBox(sql);
+	}
+	public static String getProgressEntryStatus(String projectId,Connection con){
+		String moonthyear=null;
+		Statement st=null;
+		ResultSet rs=null;
+		try{
+			String sql="select phy_month,phy_year from wms_physical_progress where project_id="+projectId+" and phy_achieved<>0 order by phy_year,phy_month";
+			//String sql="select PHY_MONTH,PHY_YEAR from PTS_PHYSICAL_PROGRESS_TRN where PROJECT_ID="+projectId+" order by PHY_YEAR,PHY_MONTH";
+			st=con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+			//System.out.println("sql="+sql);
+			rs=st.executeQuery(sql);
+			while(rs!=null && rs.next())
+			{
+				if (rs.isLast())
+					moonthyear=rs.getString(1)+"/"+rs.getString(2);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally{
+			DatabasePlugin.close(null,st,null);
+		}
+		//System.out.println("moonthyear="+moonthyear);
+		return moonthyear;
+	}
+	
+}

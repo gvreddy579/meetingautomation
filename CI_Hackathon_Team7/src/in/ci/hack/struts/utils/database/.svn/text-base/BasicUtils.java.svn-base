@@ -1,0 +1,132 @@
+package in.gov.cgg.struts.utils.database;
+
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+/**
+ * @author Project Team
+ *
+ */
+public class BasicUtils {
+	
+	public static int getSequenceValue(String sql,Connection con)
+	{
+		Statement st=null;
+		ResultSet rs = null;
+		int nextValue=0;
+		try{
+			st=con.createStatement();
+			rs=st.executeQuery(sql);
+			if(rs!=null && rs.next())
+			{
+				nextValue=rs.getInt(1);
+			}
+		}
+		catch(SQLException se)
+		{
+			se.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				rs.close();
+				st.close();
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return nextValue;
+	}
+	
+	public static ArrayList returnArrayList(String query,Connection con,String addSerialNo)
+	{
+		ArrayList<ArrayList<String>> reportData=new ArrayList<ArrayList<String>>();
+		ArrayList<String> reportSubList=null;
+		Statement st=null;
+		ResultSet rs=null;
+		int rowCount=0,serialNo=1;
+		try
+		{
+			st=con.createStatement();
+			//System.out.println("query="+query);
+			rs=st.executeQuery(query);
+			while (rs!=null && rs.next())
+			{
+				reportSubList=new ArrayList<String>();
+				if (addSerialNo.equalsIgnoreCase("yes"))
+				{
+					reportSubList.add(Integer.toString(serialNo));
+				}
+				for (rowCount=1;rowCount<=rs.getMetaData().getColumnCount();rowCount++)
+				{
+					if (rs.getString(rowCount)==null)
+						reportSubList.add("-");
+					else
+						reportSubList.add(rs.getString(rowCount).trim());
+				}
+				reportData.add(reportSubList);
+				serialNo++;
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				st.close();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		//System.out.println("reportData="+reportData);
+		return reportData;
+	}
+	
+	public static boolean notZero(String[] s) 
+	{
+		boolean retStatus=true;
+		if(s==null)retStatus=false;
+		else
+		{
+			if(s.length==0)retStatus=false;
+			else if(s.length==1)
+			{
+				if(BasicUtils.isZero(s[0])) retStatus=false;	
+			}else retStatus=true;
+
+		}
+		return retStatus;
+	}
+	public static boolean notZero(Object s) 
+	{
+		if(s==null)return false;
+		else return (notZero(s.toString()));
+	}
+	public static boolean isEmpty(String s) {
+		boolean status= (s == null ||("".equals(s)) ||(" ".equals(s)) ||("null".equals(s))|| s.length()<= 0);
+		return status;
+	}
+	public static boolean notEmpty(String s) {
+		boolean status=(s != null &&(!"".equals(s))&&(!"null".equals(s)) && s.length()>0);
+		return status;
+	}
+	public static boolean notZero(String s) 
+	{		
+		return (notEmpty(s) && (!"0".equals(s)));
+	}
+
+	public static boolean isZero(String s) {
+		return (isEmpty(s) || ("0".equals(s)));
+	}
+	
+}

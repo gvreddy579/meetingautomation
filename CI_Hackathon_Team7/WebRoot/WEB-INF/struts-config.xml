@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.3//EN" "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+<struts-config>
+
+	<!-- <data-sources>
+	<data-source key="ssa" type="org.apache.commons.dbcp.BasicDataSource">
+			<set-property property="driverClassName" value="org.postgresql.Driver" />
+	
+		 	  <set-property property="url" value="jdbc:postgresql://10.2.24.29:5432/CI_Hackathon_Team7" />  
+			<set-property property="username" value="cce" />
+			<set-property property="password" value="cce" />
+			</data-source>
+			</data-sources> -->
+<form-beans>
+  <form-bean name="LoginForm" type="ci.hack.acions">
+  <form-property name="username" type="java.lang.String"/>
+  </form-bean>
+ </form-beans>
+  <global-exceptions />
+  <!-- sqlcmd -S DESKTOP-OPMPUA8 -E -->
+  
+	<!--   <global-forwards> 
+			<forward name="login" path="/login.do" />
+			<forward name="home" path="/home.do"></forward>
+			<forward name="viewgenericreport" path="index2.jsp" />
+	   </global-forwards> -->
+	 
+  <!-- <action-mappings>
+	  <action path="/sessionExpired" type="cgg.gov.security.SessionExpired" validate="false">
+		<forward name="success" path="index.jsp" />
+	  </action>
+	  <action input="index.jsp" name="LoginForm" path="/login" scope="request" type="in.hack.login.LoginAction">
+		<forward name="success" path="index.jsp" />
+		<forward name="valid" path="page.welcome" />
+		<forward name="notvalid" path="index.jsp" />
+	 </action>
+  </action-mappings> -->
+  <message-resources parameter="com.yourcompany.struts.ApplicationResources" />  
+</struts-config>
+
