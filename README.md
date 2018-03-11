@@ -1,25 +1,25 @@
 # meetingautomation
 
-# Technologies Used
-## Front End:
+## Technologies Used
+### Front End:
  - JSP
  - Java script
 
-## Back End:
+### Back End:
  - Jersey Restful Services(Java)
  - Hibernate JPA
 
-## Meeting Bot:
+### Meeting Bot:
  - Dialogflow by Google
 
-## Database:
+### Database:
  - MySQL
  
-## Scripting
+### Scripting
  - Python
  
-## Cloud Deployment
+### Cloud Deployment
  - Heroku
   
-## Build Tools
+### Build Tools
  - Gradle
