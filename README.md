@@ -10,7 +10,7 @@
  - Hibernate JPA
 
 ### Meeting Bot:
- - Dialogflow by Google
+ - [Dialogflow](https://sites.google.com/view/hack101) by Google
 
 ### Database:
  - MySQL
